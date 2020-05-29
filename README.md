@@ -81,8 +81,8 @@ Role Variables
     Available key variables that can be used for low-level link setttings
     can be found on URL
     'https://www.freedesktop.org/software/systemd/man/systemd.link.html'
-    These key variables can also be used under systemd_networks.< br />
-    Example 1:
+    These key variables can also be used under systemd_networks.
+    <p>Example 1:
 
         vars:
           systemd_networks:
@@ -170,7 +170,7 @@ Role Variables
     DNSSEC-validated locally (excluding LLMNR and Multicast DNS). If the 
     response to a lookup request is detected to be invalid a lookup failure is
     returned to applications. 
-    <br /><br />
+    <p>
     Note that this mode requires a DNS server that supports DNSSEC. If the DNS
     server does not properly support DNSSEC all validations will fail. If set
     to "allow-downgrade" DNSSEC validation is attempted, but if the server 
