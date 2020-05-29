@@ -22,7 +22,7 @@ Role Variables
     will search for and remove all network interface files that match the 
     prefix.
 
-    defaults_systemd_interface_cleanup: <boolean>
+        defaults_systemd_interface_cleanup: <boolean>
 
     # Enable systemd-networkd and (re)start the service
     defaults_systemd_run_networkd: <boolean>
