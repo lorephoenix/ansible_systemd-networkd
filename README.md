@@ -21,7 +21,7 @@ Role Variables
     Cleanup all known network interfaces. When this option is enabled the role
     will search for and remove all network interface files that match the 
     prefix.
-        
+
     defaults_systemd_interface_cleanup: <boolean>
 
     # Enable systemd-networkd and (re)start the service
