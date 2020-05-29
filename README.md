@@ -1,4 +1,4 @@
-Role Name
+systemd-networkd
 =========
 
 The Ansible role configures systemd-networkd link, network, and netdev files. 
@@ -24,9 +24,11 @@ Role Variables
 
         defaults_systemd_interface_cleanup: <boolean>
 
+
     Enable systemd-networkd and (re)start the service
 
         defaults_systemd_run_networkd: <boolean>
+
 
     Enable or Disable the availability of systemd-resolved. This option is a
     Boolean variable.
@@ -38,35 +40,43 @@ Role Variables
 
 1. vars/(OS supported distribution).yml
 
-    # For each Ansible supported Ansible OS family or Ansible distribution it
-    # require to have the variable os_supported.
-    os_supported: <boolean>
+    For each Ansible supported Ansible OS family or Ansible distribution it
+    require to have the variable os_supported.
 
-    # Software package required to be installed
-    systemd_networkd_base_pkgs: 
-      - <package_name_1>
-      - <package_name_2>
+        os_supported: <boolean>
 
-    # Disable or enable systemd-resolved service.
-    systemd_resolved_enabled: <boolean>
+
+    Software package required to be installed
+    
+        systemd_networkd_base_pkgs: 
+          - <package_name_1>
+          - <package_name_2>
+
+
+    Disable or enable systemd-resolved service.
+
+        systemd_resolved_enabled: <boolean>
 
 
 #### Playbook defined variables for the role
 
 1. Possible variable options under vars 'systemd_networks'
 
-    # Mandatory
-     - interface: <interface_name>
+    Mandatory
+    
+         - interface: <interface_name>
 
-    # For creating systemd.link - Network device configuration to configure 
-    # low-level link settings independently of networks then use the option 
-    # 'udev', which isn't part of any systemd_networkd section options and keys. 
-    # Takes a boolean argument. If true then all available keys specified for
-    # section [Link] will be stored to an interface file with the file extension
-    # .link. If false or not specified all available keys specified for section
-    # [Link] will be stored to an interface file with the file extension
-    # .network.
-    udev: <boolean>
+
+    For creating systemd.link - Network device configuration to configure 
+    low-level link settings independently of networks then use the option 'udev',
+     which isn't part of any systemd_networkd section options and keys. 
+    Takes a boolean argument. If true then all available keys specified for
+    section [Link] will be stored to an interface file with the file extension
+    .link. If false or not specified all available keys specified for section
+    [Link] will be stored to an interface file with the file extension .network.
+    
+        udev: <boolean>
+
 
     # Available key variables that can be used for low-level link setttings
     # can be found on URL
