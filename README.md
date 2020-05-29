@@ -24,12 +24,14 @@ Role Variables
 
         defaults_systemd_interface_cleanup: <boolean>
 
-    # Enable systemd-networkd and (re)start the service
-    defaults_systemd_run_networkd: <boolean>
+    Enable systemd-networkd and (re)start the service
 
-    # Enable or Disable the availability of systemd-resolved. This option is a
-    # Boolean variable.
-    defaults_systemd_resolved_available: "{{ systemd_resolved_enabled }}"
+        defaults_systemd_run_networkd: <boolean>
+
+    Enable or Disable the availability of systemd-resolved. This option is a
+    Boolean variable.
+
+        defaults_systemd_resolved_available: "{{ systemd_resolved_enabled }}"
 
 
 #### OS supported variables for the role
