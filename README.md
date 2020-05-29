@@ -81,7 +81,7 @@ Role Variables
     Available key variables that can be used for low-level link setttings
     can be found on URL
     'https://www.freedesktop.org/software/systemd/man/systemd.link.html'
-    These key variables can also be used under systemd_networks.
+    These key variables can also be used under systemd_networks.< br />
     Example 1:
 
         vars:
@@ -131,78 +131,96 @@ Role Variables
 
 2. Possible variable options under vars 'systemd_resolved'
 
-    # A space-separated list of IPv4 and IPv6 addresses to use as system DNS
-    # servers.
-    DNS: <list>
+    A space-separated list of IPv4 and IPv6 addresses to use as system DNS
+    servers.
 
-    # A space-separated list of IPv4 and IPv6 addresses to use as the fallback 
-    # DNS servers.
-    FallbackDNS: <list>
+        DNS: <list>
 
-    # A space-separated list of domains. These domains are used as search 
-    # suffixes when resolving single-label host names, in order to qualify them
-    # into fully-qualified domain names (FQDNs).
-    Domains: <list>
 
-    # Takes a boolean argument or "resolve". Controls Link-Local Multicast Name
-    # Resolution support (RFC 4795) on the local host. If true, enables full 
-    # LLMNR responder and resolver support. If false, disables both. If set to 
-    # "resolve", only resolution support is enabled, but responding is disabled.
-    LLMNR: <boolean>|'resolve'
+    A space-separated list of IPv4 and IPv6 addresses to use as the fallback 
+    DNS servers.
 
-    # Takes a boolean argument or "resolve". Controls Multicast DNS support 
-    # (RFC 6762) on the local host. If true, enables full Multicast DNS 
-    # responder and resolver support. If false, disables both. If set to 
-    # "resolve", only resolution support is enabled, but responding is disabled. 
-    MulticastDNS: <boolean>|'resolve'
+        FallbackDNS: <list>
 
-    # Takes a boolean argument or "allow-downgrade". If true all DNS lookups are
-    # DNSSEC-validated locally (excluding LLMNR and Multicast DNS). If the 
-    # response to a lookup request is detected to be invalid a lookup failure is
-    # returned to applications. 
-    #
-    # Note that this mode requires a DNS server that supports DNSSEC. If the DNS
-    # server does not properly support DNSSEC all validations will fail. If set
-    # to "allow-downgrade" DNSSEC validation is attempted, but if the server 
-    # does not support DNSSEC properly, DNSSEC mode is automatically disabled.
-    #
-    # Note that this mode makes DNSSEC validation vulnerable to "downgrade" 
-    # attacks, where an attacker might be able to trigger a downgrade to 
-    # non-DNSSEC mode by synthesizing a DNS response that suggests DNSSEC was 
-    # not supported. If set to false, DNS lookups are not DNSSEC validated.
-    DNSSEC: <boolean>|'allow-downgrade'
 
-    # Takes a boolean argument or "opportunistic". If true all connections to 
-    # the server will be encrypted. Note that this mode requires a DNS server
-    # that supports DNS-over-TLS and has a valid certificate for it's IP. If the
-    # DNS server does not support DNS-over-TLS all DNS requests will fail. 
-    # When set to "opportunistic" DNS request are attempted to send encrypted
-    # with DNS-over-TLS. If the DNS server does not support TLS, DNS-over-TLS is
-    # disabled. Note that this mode makes DNS-over-TLS vulnerable to "downgrade"
-    # attacks, where an attacker might be able to trigger a downgrade to 
-    # non-encrypted mode by synthesizing a response that suggests DNS-over-TLS
-    # was not supported. If set to false, DNS lookups are send over UDP.
-    DNSOverTLS: <boolean>|'opportunistic'
+    A space-separated list of domains. These domains are used as search 
+    suffixes when resolving single-label host names, in order to qualify them
+    into fully-qualified domain names (FQDNs).
 
-    # Takes a boolean or "no-negative" as argument. If "yes" (the default), 
-    # resolving a domain name which already got queried earlier will return the
-    # previous result as long as it is still valid, and thus does not result in
-    # a new network request. Be aware that turning off caching comes at a 
-    # performance penalty, which is particularly high when DNSSEC is used.
-    # If "no-negative", only positive answers are cached.
-    Cache: <boolean>|'no-negative'
+        Domains: <list>
 
-    # Takes a boolean argument or one of "udp" and "tcp". If "udp", a DNS stub
-    # resolver will listen for UDP requests on address 127.0.0.53 port 53.
-    # If "tcp", the stub will listen for TCP requests on the same address and
-    # port. If "yes" (the default), the stub listens for both UDP and TCP 
-    # requests. If "no", the stub listener is disabled.
-    DNSStubListener: <boolean>|'udp'|'tcp'
 
-    # Takes a boolean argument. If "yes" (the default), the DNS stub resolver 
-    # will read /etc/hosts, and try to resolve hosts or address by using the
-    # entries in the file before sending query to DNS servers.
-    ReadEtcHosts: <boolean>
+    Takes a boolean argument or "resolve". Controls Link-Local Multicast Name
+    Resolution support (RFC 4795) on the local host. If true, enables full 
+    LLMNR responder and resolver support. If false, disables both. If set to 
+    "resolve", only resolution support is enabled, but responding is disabled.
+
+        LLMNR: <boolean>|'resolve'
+
+
+    Takes a boolean argument or "resolve". Controls Multicast DNS support 
+    (RFC 6762) on the local host. If true, enables full Multicast DNS 
+    responder and resolver support. If false, disables both. If set to 
+    "resolve", only resolution support is enabled, but responding is disabled. 
+
+        MulticastDNS: <boolean>|'resolve'
+
+
+    Takes a boolean argument or "allow-downgrade". If true all DNS lookups are
+    DNSSEC-validated locally (excluding LLMNR and Multicast DNS). If the 
+    response to a lookup request is detected to be invalid a lookup failure is
+    returned to applications. 
+    <br /><br />
+    Note that this mode requires a DNS server that supports DNSSEC. If the DNS
+    server does not properly support DNSSEC all validations will fail. If set
+    to "allow-downgrade" DNSSEC validation is attempted, but if the server 
+    does not support DNSSEC properly, DNSSEC mode is automatically disabled.
+    <br /<br />
+    Note that this mode makes DNSSEC validation vulnerable to "downgrade" 
+    attacks, where an attacker might be able to trigger a downgrade to 
+    non-DNSSEC mode by synthesizing a DNS response that suggests DNSSEC was 
+    not supported. If set to false, DNS lookups are not DNSSEC validated.
+
+        DNSSEC: <boolean>|'allow-downgrade'
+
+
+    Takes a boolean argument or "opportunistic". If true all connections to 
+    the server will be encrypted. Note that this mode requires a DNS server
+    that supports DNS-over-TLS and has a valid certificate for it's IP. If the
+    DNS server does not support DNS-over-TLS all DNS requests will fail. 
+    When set to "opportunistic" DNS request are attempted to send encrypted
+    with DNS-over-TLS. If the DNS server does not support TLS, DNS-over-TLS is
+    disabled. Note that this mode makes DNS-over-TLS vulnerable to "downgrade"
+    attacks, where an attacker might be able to trigger a downgrade to 
+    non-encrypted mode by synthesizing a response that suggests DNS-over-TLS
+    was not supported. If set to false, DNS lookups are send over UDP.
+
+        DNSOverTLS: <boolean>|'opportunistic'
+
+
+    Takes a boolean or "no-negative" as argument. If "yes" (the default), 
+    resolving a domain name which already got queried earlier will return the
+    previous result as long as it is still valid, and thus does not result in
+    a new network request. Be aware that turning off caching comes at a 
+    performance penalty, which is particularly high when DNSSEC is used.
+    If "no-negative", only positive answers are cached.
+
+        Cache: <boolean>|'no-negative'
+
+
+    Takes a boolean argument or one of "udp" and "tcp". If "udp", a DNS stub
+    resolver will listen for UDP requests on address 127.0.0.53 port 53.
+    If "tcp", the stub will listen for TCP requests on the same address and
+    port. If "yes" (the default), the stub listens for both UDP and TCP 
+    requests. If "no", the stub listener is disabled.
+
+        DNSStubListener: <boolean>|'udp'|'tcp'
+
+    Takes a boolean argument. If "yes" (the default), the DNS stub resolver 
+    will read /etc/hosts, and try to resolve hosts or address by using the
+    entries in the file before sending query to DNS servers.
+
+        ReadEtcHosts: <boolean>
 
 
 Dependencies
