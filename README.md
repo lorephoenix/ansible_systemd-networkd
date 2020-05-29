@@ -78,49 +78,55 @@ Role Variables
         udev: <boolean>
 
 
-    # Available key variables that can be used for low-level link setttings
-    # can be found on URL
-    # 'https://www.freedesktop.org/software/systemd/man/systemd.link.html'
-    # These key variables can also be used under systemd_networks.
-    # Example 1:
-    vars:
-      systemd_networks:
-        - interface: eth0
-          Host: myhost1
-          Path: pci-0000:01:00.0
-          Description: production interface
-          MTUBytes: 1500
+    Available key variables that can be used for low-level link setttings
+    can be found on URL
+    'https://www.freedesktop.org/software/systemd/man/systemd.link.html'
+    These key variables can also be used under systemd_networks.
+    Example 1:
 
-    # To make it cleaner you can specify the section name first and below that
-    # you can defined the key variables linked to that section name.
-    vars:
-      systemd_networks:
-        - interface: eth0
-          Match:
-            Host: myhost1
-            Path: pci-0000:01:00.0
-          Link:
-            Description: production interface
-            MTUBytes: 1500
+        vars:
+          systemd_networks:
+            - interface: eth0
+              Host: myhost1
+              Path: pci-0000:01:00.0
+              Description: production interface
+              MTUBytes: 1500
 
-    # Based on Example 1 input will create a network file 'eth0.network' that 
-    # contains the following data.
-    [Match]
-    Host: myhost1
-    Path: pci-0000:01:00.0
 
-    [Link]
-    Description: production interface
-    MTUBytes: 1500
+    To make it cleaner you can specify the section name first and below that
+    you can defined the key variables linked to that section name.
 
-    # Available key variables that can be used for network devices based on the
-    # the configuration in systemd.netdev.
-    # URL: 'https://www.freedesktop.org/software/systemd/man/systemd.netdev.html'
+        vars:
+          systemd_networks:
+            - interface: eth0
+              Match:
+                Host: myhost1
+                Path: pci-0000:01:00.0
+              Link:
+                Description: production interface
+                MTUBytes: 1500
 
-    # Only key variables in systemd.network within the following section options
-    # [Match], [Link], [Network], [DHCPv4], [DHCPv6], [Address] and [Route] can
-    # be used.
-    # URL: 'https://www.freedesktop.org/software/systemd/man/systemd.network.html'
+
+    Based on Example 1 input will create a network file 'eth0.network' that 
+    contains the following data.
+    
+        [Match]
+        Host: myhost1
+        Path: pci-0000:01:00.0
+
+        [Link]
+        Description: production interface
+        MTUBytes: 1500
+
+
+    Available key variables that can be used for network devices based on the
+    the configuration in systemd.netdev.
+    URL: 'https://www.freedesktop.org/software/systemd/man/systemd.netdev.html'
+
+    Only key variables in systemd.network within the following section options
+    [Match], [Link], [Network], [DHCPv4], [DHCPv6], [Address] and [Route] can
+    be used.
+    URL: 'https://www.freedesktop.org/software/systemd/man/systemd.network.html'
     
 
 2. Possible variable options under vars 'systemd_resolved'
