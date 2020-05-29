@@ -1,0 +1,31 @@
+---
+# Enable service systemd-networkd
+- name: service-systemd | Enable and start systemd-networkd, if not running
+  systemd:
+    name: 'systemd-networkd'
+    enabled: True
+    state: started
+  async: 45
+  poll: 0
+  when:
+    - defaults_systemd_run_networkd | bool
+  tags:
+    - systemd-networkd
+
+# Enable service systemd-resolved
+- name: service-systemd | Enable and start systemd-resolved, if not running
+  systemd:
+    name: 'systemd-resolved'
+    enabled: True
+    state: started
+  async: 45
+  poll: 0
+  when:
+    - defaults_systemd_resolved_available | bool
+  tags:
+    - systemd-resolved
+
+- name: service-systemd | Restart systemd_networkd prior to applying sysctl changes
+  meta: flush_handlers
+
+

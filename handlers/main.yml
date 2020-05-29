@@ -1,0 +1,25 @@
+---
+- name: Restart systemd-networkd
+  systemd:
+    name: 'systemd-networkd'
+    state: restarted
+    enabled: True
+  async: 45
+  poll: 0
+  when:
+    - defaults_systemd_run_networkd | bool
+  listen: Restart systemd-networkd
+  tags: 
+    - handlers
+    - systemd-networkd
+
+- name: Restart systemd-resolved
+  systemd:
+    name: "systemd-resolved"
+    state: restarted
+    enabled: "yes"
+  when:
+    - defaults_systemd_resolved_available | bool
+  tags: 
+    - handlers
+    - systemd-resolved

@@ -1,0 +1,24 @@
+---
+- name: Load OS dependent variables
+  include_vars: '{{ item_os }}'
+  with_first_found:
+    - files:
+      - '{{ ansible_distribution | lower}}_{{ ansible_distribution_version | lower}}.yml'
+      - '{{ ansible_distribution | lower}}_{{ ansible_distribution_major_version | lower}}.yml'
+      - '{{ ansible_distribution | lower}}.yml'
+      - '{{ ansible_os_family | lower }}_{{ ansible_distribution_major_version | lower }}.yml'
+      - '{{ ansible_distribution | lower }}.yml'
+      - '{{ ansible_os_family | lower }}.yml'
+      skip: false
+  loop_control:
+    loop_var: item_os
+  tags: [ 'OS dependency']
+
+# Load 'install-systemd.yml' task file
+- include: 'install-systemd.yml'
+
+# Load 'config-systemd.yml' task file
+- include: 'config-systemd.yml'
+
+# Load 'service-systemd.yml' task file
+- include: 'service-systemd.yml'

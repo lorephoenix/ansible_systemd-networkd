@@ -1,0 +1,54 @@
+---
+- name: install-systemd | Ensure that the systemd packages are installed on host
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items: '{{ systemd_networkd_base_pkgs }}'
+  when:
+    - systemd_networkd_base_pkgs |  length > 0 
+  register: install_packages
+  until: install_packages is success
+  retries: 3
+  delay: 2
+  tags: 
+    - install-systemd
+    - systemd-networkd
+
+- name: install-systemd | Create systemd-networkd directory
+  file:
+    path: '/etc/systemd/network'
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+  tags: 
+    - install-systemd
+    - systemd-networkd
+    - create group
+
+- name: install-systemd | Find prefixed netdev and network files
+  find:
+    paths: '/etc/systemd/network'
+    patterns: '*.netdev,*.network,*.link'
+  register: networkd_files
+  when:
+    - defaults_systemd_interface_cleanup | bool
+  tags: 
+    - install-systemd
+    - systemd-networkd
+    - search files
+
+- name: install-systemd | Remove prefixed network files
+  file:
+    path: '{{ item.path }}'
+    state: absent
+  with_items: '{{ networkd_files.files }}'
+  when:
+    - defaults_systemd_interface_cleanup | bool
+    - systemd_networks is defined
+    - systemd_networks is iterable
+    - systemd_networks is not string
+  tags: 
+    - install-systemd
+    - systemd-networkd
+    - remove files

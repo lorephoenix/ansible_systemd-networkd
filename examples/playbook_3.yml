@@ -1,0 +1,307 @@
+---
+############################
+# Bonding interfaces
+############################
+#
+# >>> File content of /etc/systemd/network/enp7s0.network <<<
+# [Match]
+# Name=enp7s0
+#
+# [Link]
+# MACAddress=52:54:00:86:dc:1c
+# MTUBytes=9000
+# 
+# [Network]
+# Description=Physical interface for Bond
+# EmitLLDP=nearest-bridge
+# LLDP=routers-only
+# Bond=bond1
+#
+#
+#
+# >>> File content of /etc/systemd/network/enp8s0.network <<<
+# [Match]
+# Name=enp8s0
+#  
+# [Link]
+# MACAddress=52:54:00:db:f5:42
+# MTUBytes=9000
+# 
+# [Network]
+# Description=Physical interface for Bond
+# EmitLLDP=nearest-bridge
+# LLDP=routers-only
+# Bond=bond1
+#
+#
+#
+# >>> File content of /etc/systemd/network/bond1.network <<<
+# [Match]
+# Name=bond1
+# 
+# [Network]
+# BindCarrier=enp7s0 enp8s0
+# VLAN=vlan10
+# VLAN=vlan11
+#
+#
+#
+# >>> File content of /etc/systemd/network/bond1.netdev <<<
+# [NetDev]
+# Name=bond1
+# Kind=bond
+# 
+# [Bond]
+# DownDelaySec=200
+# LACPTransmitRate=fast
+# Mode=802.3ad
+# TransmitHashPolicy=layer2+3
+# UpDelaySec=200
+#
+#
+#
+# >>> File content of /etc/systemd/network/bond1.10.network <<<
+# [Match]
+# Name=bond1.10
+# 
+# [Network]
+# Bridge=br-vl10
+# Description=User LAN network
+#
+#
+#
+# >>> File content of /etc/systemd/network/bond1.11.network <<<
+# [Match]
+# Name=bond1.11
+# 
+# [Network]
+# Bridge=br-vl11
+# Description=Server LAN network
+#
+#
+#
+# >>> File content of /etc/systemd/network/bond1.10.netdev <<<
+# [NetDev]
+# Name=bond1.10
+# Kind=vlan
+# Description=User LAN network
+# 
+# [VLAN]
+# Id=10
+#
+#
+#
+# >>> File content of /etc/systemd/network/bond1.11.netdev <<<
+# [NetDev]
+# Name=bond1.11
+# Kind=vlan
+# Description=Server LAN network
+# 
+# [VLAN]
+# Id=11
+#
+#
+#
+# >>> File content of /etc/systemd/network/br-vl10.network <<<
+# [Match]
+# Name=br-vl10
+# 
+# [Network]
+# Description=User LAN network
+#
+#
+#
+# >>> File content of /etc/systemd/network/br-vl11.network <<<
+# [Match]
+# Name=br-vl11
+# 
+# [Network]
+# Description=Server LAN network
+#
+#
+#
+# >>> File content of /etc/systemd/network/br-vl10.netdev <<<
+# [NetDev]
+# Name=br-vl10
+# Kind=bridge
+# Description=User LAN network
+# 
+# [Bridge]
+# AgeingTimeSec=60
+# ForwardDelaySec=0
+# HelloTimeSec=0
+# MaxAgeSec=0
+# STP=False
+#
+#
+#
+# >>> File content of /etc/systemd/network/br-vl11.netdev <<<
+# [NetDev]
+# Name=br-vl11
+# Kind=bridge
+# Description=Server LAN network
+# 
+# [Bridge]
+# AgeingTimeSec=60
+# ForwardDelaySec=0
+# HelloTimeSec=0
+# MaxAgeSec=0
+# STP=False
+#
+############################
+
+- hosts: myhost1
+  remote_user: ansible
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+
+  vars:
+    systemd_networks:
+      - interface: enp7s0
+        macaddress: 52:54:00:86:dc:1c
+        mtu: 9000
+        description: Physical interface for Bond
+        emitlldp: nearest-bridge
+        lldp: routers-only
+        bond: bond1
+
+      - interface: enp8s0
+        macaddress: 52:54:00:db:f5:42
+        mtu: 9000
+        description: Physical interface for Bond
+        emitlldp: nearest-bridge
+        lldp: routers-only
+        bond: bond1
+
+      - interface: bond1
+        Bindcarrier: enp7s0 enp8s0
+        DownDelaySec: 200
+        Kind: bond
+        LACPTransmitRate: fast
+        Mode: 802.3ad
+        TransmitHashPolicy: layer2+3
+        VLAN:
+          - vlan10
+          - vlan11
+        UpDelaySec: 200
+          
+      - interface: bond1.10
+        bridge: br-vl10
+        Kind: vlan
+        id: 10
+        description: User LAN network
+
+      - interface: bond1.11
+        bridge: br-vl11
+        Kind: vlan
+        id: 11
+        description: Server LAN network
+        
+      - interface: br-vl10
+        kind: bridge
+        description: User LAN network
+        AgeingTimeSec: 60
+        ForwardDelaySec: 0 
+        HelloTimeSec: 0
+        MaxAgeSec: 0
+        STP: false
+        
+      - interface: br-vl11
+        kind: bridge
+        description: Server LAN network
+        AgeingTimeSec: 60
+        ForwardDelaySec: 0
+        HelloTimeSec: 0
+        MaxAgeSec: 0
+        STP: false
+
+############################
+# Is equal like items below
+############################
+
+  vars:
+    systemd_networks:
+      - interface: enp7s0
+        Link:
+          MACAddress: 52:54:00:86:dc:1c
+          MTUBytes: 9000
+        Network:
+          Description: Physical interface for Bond
+          EmitLLDP: nearest-bridge
+          LLDP: routers-only
+          Bond: bond1
+
+      - interface: enp8s0
+        Link:
+          MACAddress: 52:54:00:db:f5:42
+          MTUBytes: 9000
+        Network:
+          Description: Physical interface for Bond
+          EmitLLDP: nearest-bridge
+          LLDP: routers-only
+          Bond: bond1
+
+      - interface: bond1
+        Bond:
+          DownDelaySec: 200
+          LACPTransmitRate: fast
+          Mode: 802.3ad
+          TransmitHashPolicy: layer2+3
+          VLAN:
+            - vlan10
+            - vlan11
+          UpDelaySec: 200
+        NetDev:
+          Kind: bond
+        Network: 
+          Bindcarrier: enp7s0 enp8s0
+            
+      - interface: bond1.10
+        Network:
+          bridge: br-vl10
+          Description: User LAN network
+        NetDev:
+          Kind: vlan
+          Description: User LAN network
+        VLAN:
+         id: 10
+
+      - interface: bond1.11
+        Network:
+          bridge: br-vl11
+          Description: Server LAN network
+        NetDev:          
+          Kind: vlan
+          Description: Server LAN network
+        VLAN:
+          id: 11
+        
+      - interface: br-vl10
+        NetDev:
+          kind: bridge
+          Description: User LAN network
+        Network:
+          Description: User LAN network
+        Bridge:
+          AgeingTimeSec: 60
+          ForwardDelaySec: 0 
+          HelloTimeSec: 0
+          MaxAgeSec: 0
+          STP: false
+        
+      - interface: br-vl11
+        NetDev:
+          kind: bridge
+          Description: Server LAN network
+        Network:
+          Description: Server LAN network
+        Bridge:
+          AgeingTimeSec: 60
+          ForwardDelaySec: 0
+          HelloTimeSec: 0
+          MaxAgeSec: 0
+          STP: false

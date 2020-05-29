@@ -1,0 +1,1381 @@
+{# ########################################################################## 
+  # .link files
+  # .netdev files
+  # .network files
+  # 
+  # >> Variables:
+  # () _content
+  # () _sectionDataSet
+  # () _types
+  # () _workspace
+  #
+  # >> Public macros:
+  # () SECTION_MAP
+  # () SET_SECTIONS
+  # () FIND_KEY
+  # () DISPLAY
+  #
+  # >> Private macros:
+  # () _ANALYSE
+  # () _PROCESS_TYPE
+  # () _BUILD
+  #
+  # >> Steps
+  # SET_SECTIONS
+  #   |
+  #   v
+  # SECTION_MAP
+  #   |
+  #   v
+  # 1. FIND_KEY -> 2. _ANALYSE -> 3. _PROCESS_TYPE -> 4. _BUILD -> 5. DISPLAY
+  #        ^              v
+  #        |______________|
+  #            
+  ########################################################################### #}
+{# 
+  ########################################
+  # INITIALIZE VARIABLES                 #
+  #                                      #
+#}
+{%- set _content = namespace(
+      ADDRESS=none,
+      BOND=none,
+      BRIDGE=none,
+      DHCPV4=none,
+      DHCPV6=none,
+      FOOOVERUDP=none,
+      GENEVE=none,
+      IPVLAN=none,
+      IPVTAP=none,
+      LINK=none,
+      L2TP=none,
+      L2TPSESSION=none,
+      MACSEC=none,
+      MACSECRECEIVECHANNEL=none,
+      MACSECRECEIVEASSOCIATION=none,
+      MACSECTRANSMITASSOCIATION=none,
+      MACVLAN=none,
+      MACVTAP=none,
+      MATCH=none,
+      NETDEV=none,
+      NETWORK=none,
+      PEER=none,
+      ROUTE=none,
+      TAP=none,
+      TUN=none,
+      TUNNEL=none,
+      VLAN=none,
+      VRF=none,
+      VXCAN=none,
+      VXLAN=none,
+      WIREGAURD=none,
+      WIREGUARDPEER=none,
+      XFRM=none   ) -%}
+{%- set _sectionDataSet = namespace(
+      ADDRESS=none,
+      BOND=none,
+      BRIDGE=none,
+      DHCPV4=none,
+      DHCPV6=none,
+      FOOOVERUDP=none,
+      GENEVE=none,
+      IPVLAN=none,
+      IPVTAP=none,
+      LINK=none,
+      L2TP=none,
+      L2TPSESSION=none,
+      MACSEC=none,
+      MACSECRECEIVECHANNEL=none,
+      MACSECRECEIVEASSOCIATION=none,
+      MACSECTRANSMITASSOCIATION=none,
+      MACVLAN=none,
+      MACVTAP=none,
+      MATCH=none,
+      NETDEV=none,
+      NETWORK=none,
+      PEER=none,
+      ROUTE=none,
+      TAP=none,
+      TUN=none,
+      TUNNEL=none,
+      VLAN=none,
+      VRF=none,
+      VXCAN=none,
+      VXLAN=none,
+      WIREGUARD=none,
+      WIREGUARDPEER=none,
+      XFRM=none
+      ) -%}
+{%- set _types = [ 'boolean', 'string', 'number', 'list', 'string_boolean',
+      'string_number', 'string_list', 'multi'] -%}
+{%- set _workspace = namespace(FLAG=none,SECTIONS=none) -%}
+{# 
+  #                                      #
+  # End of INITIALIZE VARIABLES          #
+  ########################################
+#}
+{# 
+  ########################################
+  # Begin of MACROS                      #
+  #                                      #
+#}
+{# ############################################################################
+   ############################################################################
+
+  ██████╗ ██╗   ██╗██████╗ ██╗     ██╗ ██████╗        
+  ██╔══██╗██║   ██║██╔══██╗██║     ██║██╔════╝        
+  ██████╔╝██║   ██║██████╔╝██║     ██║██║             
+  ██╔═══╝ ██║   ██║██╔══██╗██║     ██║██║             
+  ██║     ╚██████╔╝██████╔╝███████╗██║╚██████╗        
+  ╚═╝      ╚═════╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝        
+                                                     
+  ███╗   ███╗ █████╗  ██████╗██████╗  ██████╗ ███████╗ 
+  ████╗ ████║██╔══██╗██╔════╝██╔══██╗██╔═══██╗██╔════╝ 
+  ██╔████╔██║███████║██║     ██████╔╝██║   ██║███████╗ 
+  ██║╚██╔╝██║██╔══██║██║     ██╔══██╗██║   ██║╚════██║ 
+  ██║ ╚═╝ ██║██║  ██║╚██████╗██║  ██║╚██████╔╝███████║ 
+  ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝ 
+
+  ############################################################################
+  ############################################################################}
+
+{%- macro SECTION_MAP(section, dataset) -%}
+{# ##########################################################################
+
+  ███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ███╗   ███╗ █████╗ ██████╗ 
+  ██╔════╝██╔════╝██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ████╗ ████║██╔══██╗██╔══██╗
+  ███████╗█████╗  ██║        ██║   ██║██║   ██║██╔██╗ ██║    ██╔████╔██║███████║██████╔╝
+  ╚════██║██╔══╝  ██║        ██║   ██║██║   ██║██║╚██╗██║    ██║╚██╔╝██║██╔══██║██╔═══╝ 
+  ███████║███████╗╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ██║ ╚═╝ ██║██║  ██║██║     
+  ╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     
+  # SECTION_MAP arguments:
+  #   () section  : part of a specific section like Match, Link, NetDev, ...
+  #   () dataset  : dictionaries within a dictionary that are mapped to a 
+  #                 specific section.
+  ########################################################################### #}
+{%- if section is defined and dataset is defined and section is string 
+      and dataset is iterable and dataset is not string 
+      and dataset is mapping -%}{#
+  Initialize variables into uppercase characters. #}
+  {%- set section = section|upper -%}
+  {%- if section == 'MATCH' and _sectionDataSet.MATCH is none -%}
+    {%- set _sectionDataSet.MATCH = dataset -%}
+  {%- elif section == 'LINK' and _sectionDataSet.LINK is none -%}
+    {%- set _sectionDataSet.LINK = dataset -%}
+  {%- elif section == 'NETDEV' and _sectionDataSet.NETDEV is none -%}
+    {%- set _sectionDataSet.NETDEV = dataset -%}
+  {%- elif section == 'BOND' and _sectionDataSet.BOND is none -%}
+    {%- set _sectionDataSet.BOND = dataset -%}
+  {%- elif section == 'BRIDGE' and _sectionDataSet.BRIDGE is none -%}
+    {%- set _sectionDataSet.BRIDGE = dataset -%}
+  {%- elif section == 'FOOOVERUDP' and _sectionDataSet.FOOOVERUDP is none -%}
+    {%- set _sectionDataSet.FOOOVERUDP = dataset -%}
+  {%- elif section == 'GENEVE' and _sectionDataSet.GENEVE is none -%}
+    {%- set _sectionDataSet.GENEVE = dataset -%}
+  {%- elif section == 'IPVLAN' and _sectionDataSet.IPVLAN is none -%}
+    {%- set _sectionDataSet.BRIDGE = dataset -%}
+  {%- elif section == 'IPVLAN' and _sectionDataSet.BRIDGE is none -%}
+    {%- set _sectionDataSet.BRIDGE = dataset -%}
+  {%- elif section == 'IPVTAP' and _sectionDataSet.IPVTAP is none -%}
+    {%- set _sectionDataSet.IPVTAP = dataset -%}
+  {%- elif section == 'L2TP' and _sectionDataSet.L2TP is none -%}
+    {%- set _sectionDataSet.L2TP = dataset -%}
+  {%- elif section == 'L2TPSESSION' and _sectionDataSet.L2TPSESSION is none -%}
+    {%- set _sectionDataSet.L2TPSESSION = dataset -%}
+  {%- elif section == 'MACSEC' and _sectionDataSet.MACSEC is none -%}
+    {%- set _sectionDataSet.MACSEC = dataset -%}
+  {%- elif section == 'MACSECRECEIVECHANNEL' 
+        and _sectionDataSet.MACSECRECEIVECHANNEL is none -%}
+    {%- set _sectionDataSet.MACSECRECEIVECHANNEL = dataset -%}
+  {%- elif section == 'MACSECRECEIVEASSOCIATION' 
+        and _sectionDataSet.MACSECRECEIVEASSOCIATION is none -%}
+    {%- set _sectionDataSet.MACSECRECEIVEASSOCIATION = dataset -%}
+  {%- elif section == 'MACSECTRANSMITASSOCIATION' 
+        and _sectionDataSet.MACSECTRANSMITASSOCIATION is none -%}
+    {%- set _sectionDataSet.MACSECTRANSMITASSOCIATION = dataset -%}
+  {%- elif section == 'MACVLAN' and _sectionDataSet.MACVLAN is none -%}
+    {%- set _sectionDataSet.MACVLAN = dataset -%}
+  {%- elif section == 'MACVTAP' and _sectionDataSet.MACVTAP is none -%}
+    {%- set _sectionDataSet.MACVTAP = dataset -%}
+  {%- elif section == 'PEER' and _sectionDataSet.PEER is none -%}
+    {%- set _sectionDataSet.PEER = dataset -%}
+  {%- elif section == 'TAP' and _sectionDataSet.TAP is none -%}
+    {%- set _sectionDataSet.TAP = dataset -%}
+  {%- elif section == 'TUN' and _sectionDataSet.TUN is none -%}
+    {%- set _sectionDataSet.TUN = dataset -%}
+  {%- elif section == 'TUNNEL' and _sectionDataSet.TUNNEL is none -%}
+    {%- set _sectionDataSet.TUNNEL = dataset -%}
+  {%- elif section == 'VLAN' and _sectionDataSet.VLAN is none -%}
+    {%- set _sectionDataSet.VLAN = dataset -%}
+  {%- elif section == 'VRF' and _sectionDataSet.VRF is none -%}
+    {%- set _sectionDataSet.VRF = dataset -%}
+  {%- elif section == 'VXCAN' and _sectionDataSet.VXCAN is none -%}
+    {%- set _sectionDataSet.VXCAN = dataset -%}
+  {%- elif section == 'VXLAN' and _sectionDataSet.VXLAN is none -%}
+    {%- set _sectionDataSet.VXLAN = dataset -%}
+  {%- elif section == 'WIREGUARD' and _sectionDataSet.WIREGUARD is none -%}
+    {%- set _sectionDataSet.WIREGUARD = dataset -%}
+  {%- elif section == 'WIREGUARDPEER' and _sectionDataSet.WIREGUARDPEER is none -%}
+    {%- set _sectionDataSet.WIREGUARDPEER = dataset -%}
+  {%- elif section == 'XFRM' and _sectionDataSet.XFRM is none -%}
+    {%- set _sectionDataSet.XFRM = dataset -%}
+  {%- elif section == 'NETWORK' and _sectionDataSet.NETWORK is none -%}
+    {%- set _sectionDataSet.NETWORK = dataset -%}
+  {%- elif section == 'DHCPV4' and _sectionDataSet.DHCPV4 is none -%}
+    {%- set _sectionDataSet.DHCPV4 = dataset -%}
+  {%- elif section == 'DHCPV6' and _sectionDataSet.DHCPV6 is none -%}
+    {%- set _sectionDataSet.DHCPV6 = dataset -%}
+  {%- elif section == 'ADDRESS' and _sectionDataSet.ADDRESS is none -%}
+    {%- set _sectionDataSet.ADDRESS = dataset -%}
+  {%- elif section == 'ROUTE' and _sectionDataSet.ROUTE is none -%}
+    {%- set _sectionDataSet.ROUTE = dataset -%}
+  {%- endif -%}{# End of if/elif section == '???' and _sectionDataSet is ... #}
+{%- endif -%}{# End of if filetype is defined and section is defined and ... #}
+{%- endmacro -%}{# End of macro SECTION_MAP() #}
+
+
+{%- macro SET_SECTIONS(sections) -%}
+{# ##########################################################################
+
+  ███████╗███████╗████████╗     ███████╗███████╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+  ██╔════╝██╔════╝╚══██╔══╝     ██╔════╝██╔════╝██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+  ███████╗█████╗     ██║        ███████╗█████╗  ██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+  ╚════██║██╔══╝     ██║        ╚════██║██╔══╝  ██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+  ███████║███████╗   ██║███████╗███████║███████╗╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+  ╚══════╝╚══════╝   ╚═╝╚══════╝╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+                                                                                                                                   
+  # SET_SECTIONS arguments:
+  #   () sections     : a list of section names
+  ########################################################################### #}
+{%- if _workspace.SECTIONS is defined and _workspace.SECTIONS is none 
+      and sections is defined and sections is iterable 
+      and sections is not string and sections is not mapping -%}
+  {%- set _workspace.SECTIONS = sections -%}
+{%- endif -%}{# End of if _workspace.SECTIONS is defined and ... #}
+{%- endmacro -%}
+
+
+{%- macro FIND_KEY(sections, key, values) -%}{#
+  ###########################################################################
+
+   ██╗       ███████╗██╗███╗   ██╗██████╗         ██╗  ██╗███████╗██╗   ██╗
+  ███║       ██╔════╝██║████╗  ██║██╔══██╗        ██║ ██╔╝██╔════╝╚██╗ ██╔╝
+  ╚██║       █████╗  ██║██╔██╗ ██║██║  ██║        █████╔╝ █████╗   ╚████╔╝ 
+   ██║       ██╔══╝  ██║██║╚██╗██║██║  ██║        ██╔═██╗ ██╔══╝    ╚██╔╝  
+   ██║██╗    ██║     ██║██║ ╚████║██████╔╝███████╗██║  ██╗███████╗   ██║   
+   ╚═╝╚═╝    ╚═╝     ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝   
+  # FIND_KEY arguments:
+  #   () sections  : a list of section names like MATCH, LINK, ...
+  #   () key       : items set under systemd_networks or under section name
+  #   () values    : value(s) that are set behind the key
+  ########################################################################### #}
+{%- if sections is defined and key is defined and values is defined
+      and sections is iterable and sections is not string
+      and sections is not mapping and sections|length > 0 and key is string
+      and values is not none -%}{#
+  # Initialize variable into uppercase characters. 
+  #}
+  {%- set key = key|upper -%}
+  {%- set flag = false -%}{#
+    Search if provided key exist for that specific section. 
+#}{%- for section in sections -%}
+    {%- set section = section|upper -%}
+    {%- if section == 'MATCH' and _sectionDataSet.MATCH is not none
+          and key in _sectionDataSet.MATCH.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MATCH, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'LINK' and _sectionDataSet.LINK is not none
+          and key in _sectionDataSet.LINK.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.LINK, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'NETDEV' and _sectionDataSet.NETDEV is not none
+          and key in _sectionDataSet.NETDEV.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.NETDEV, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'BOND' and _sectionDataSet.BOND is not none
+          and key in _sectionDataSet.BOND.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.BOND, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'BRIDGE' and _sectionDataSet.BRIDGE is not none
+          and key in _sectionDataSet.BRIDGE.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.BRIDGE, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'FOOOVERUDP' and _sectionDataSet.FOOOVERUDP is not none
+          and key in _sectionDataSet.FOOOVERUDP.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.FOOOVERUDP, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'GENEVE' and _sectionDataSet.GENEVE is not none
+          and key in _sectionDataSet.GENEVE.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.GENEVE, key, IPVLAN) -}}
+    {%- endif -%}
+    {%- if section == 'IPVLAN' and _sectionDataSet.BRIDGE is not none
+          and key in _sectionDataSet.IPVLAN.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.IPVLAN, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'IPVTAP' and _sectionDataSet.IPVTAP is not none
+          and key in _sectionDataSet.IPVTAP.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.IPVTAP, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'L2TP' and _sectionDataSet.L2TP is not none
+          and key in _sectionDataSet.L2TP.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.L2TP, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'L2TPSESSION' and _sectionDataSet.L2TPSESSION is not none
+          and key in _sectionDataSet.L2TPSESSION.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.L2TPSESSION, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'MACSEC' and _sectionDataSet.MACSEC is not none
+          and key in _sectionDataSet.MACSEC.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MACSEC, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'MACSECRECEIVECHANNEL' 
+          and _sectionDataSet.MACSECRECEIVECHANNEL is not none
+          and key in _sectionDataSet.MACSECRECEIVECHANNEL.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MACSECRECEIVECHANNEL, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'MACSECRECEIVEASSOCIATION' 
+          and _sectionDataSet.MACSECRECEIVEASSOCIATION is not none
+          and key in _sectionDataSet.MACSECRECEIVEASSOCIATION.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MACSECRECEIVEASSOCIATION, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'MACSECTRANSMITASSOCIATION' 
+          and _sectionDataSet.MACSECTRANSMITASSOCIATION is not none
+          and key in _sectionDataSet.MACSECTRANSMITASSOCIATION.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MACSECTRANSMITASSOCIATION, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'MACVLAN' and _sectionDataSet.MACVLAN is not none
+          and key in _sectionDataSet.MACVLAN.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MACVLAN, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'MACVTAP' and _sectionDataSet.MACVTAP is not none
+          and key in _sectionDataSet.MACVTAP.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.MACVTAP, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'PEER' and _sectionDataSet.PEER is not none
+          and key in _sectionDataSet.PEER.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.PEER, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'TAP' and _sectionDataSet.TAP is not none
+          and key in _sectionDataSet.TAP.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.TAP, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'TUN' and _sectionDataSet.TUN is not none
+          and key in _sectionDataSet.TAP.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.TAP, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'TUNNEL' and _sectionDataSet.TUNNEL is not none
+          and key in _sectionDataSet.TUNNEL.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.TUNNEL, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'VLAN' and _sectionDataSet.VLAN is not none
+          and key in _sectionDataSet.VLAN.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.VLAN, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'VRF' and _sectionDataSet.VRF is not none
+          and key in _sectionDataSet.VRF.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.VRF, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'VXCAN' and _sectionDataSet.VXCAN is not none
+          and key in _sectionDataSet.VXCAN.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.VXCAN, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'VXLAN' and _sectionDataSet.VXLAN is not none
+          and key in _sectionDataSet.VXLAN.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.VXLAN, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'WIREGUARD' and _sectionDataSet.WIREGUARD is not none
+          and key in _sectionDataSet.WIREGUARD.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.WIREGUARD, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'WIREGUARDPEER' and _sectionDataSet.WIREGUARDPEER is not none
+          and key in _sectionDataSet.WIREGUARDPEER.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.WIREGUARDPEER, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'XFRM' and _sectionDataSet.XFRM is not none
+          and key in _sectionDataSet.XFRM.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.XFRM, key, values) -}}
+    {%- endif -%}
+    {%- if section == 'NETWORK' and _sectionDataSet.NETWORK is not none
+          and key in _sectionDataSet.NETWORK.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.NETWORK, key, values) -}}
+    {% endif -%}
+    {%- if section == 'ADDRESS' and _sectionDataSet.ADDRESS is not none
+          and key in _sectionDataSet.ADDRESS.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.ADDRESS, key, values) -}}
+    {% endif -%}
+    {%- if section == 'DHCPV4' and _sectionDataSet.DHCPV4 is not none
+          and key in _sectionDataSet.DHCPV4.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.DHCPV4, key, values) -}}
+    {% endif -%}
+    {%- if section == 'DHCPV6' and _sectionDataSet.DHCPV6 is not none
+          and key in _sectionDataSet.DHCPV6.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.DHCPV6, key, values) -}}
+    {% endif -%}
+    {%- if section == 'ROUTE' and _sectionDataSet.ROUTE is not none
+          and key in _sectionDataSet.ROUTE.keys() -%}
+      {%- set flag =  true -%}
+      {{- _ANALYSE(section, _sectionDataSet.ROUTE, key, values) -}}
+    {% endif -%}
+  {%- if section == key and flag is false -%}
+    {{- _ANALYSE(section, none, key, values) -}}
+  {%- endif -%}{# End of if/elif section == ???? ... #}
+{%- endfor -%}{# End of for section in sections #}
+{%- endif -%}{# End of if sections is defined and key is defined and ... #}
+{%- endmacro -%}{# End of macro FIND_KEY() #}
+
+
+{%- macro DISPLAY(section) -%}
+{# ##########################################################################
+
+  ███████╗       ██████╗ ██╗███████╗██████╗ ██╗      █████╗ ██╗   ██╗
+  ██╔════╝       ██╔══██╗██║██╔════╝██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝
+  ███████╗       ██║  ██║██║███████╗██████╔╝██║     ███████║ ╚████╔╝ 
+  ╚════██║       ██║  ██║██║╚════██║██╔═══╝ ██║     ██╔══██║  ╚██╔╝  
+  ███████║██╗    ██████╔╝██║███████║██║     ███████╗██║  ██║   ██║   
+  ╚══════╝╚═╝    ╚═════╝ ╚═╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   
+  
+  # DISPLAY arguments:
+  #   () section    : section name
+  ########################################################################### #}
+{%- set section = section|upper -%}
+{%- if section in _workspace.SECTIONS -%}
+  {%- if _content.MATCH is defined and _content.MATCH is not none 
+        and section == 'MATCH' -%}
+    {{- _content.MATCH -}}
+  {%- endif -%}
+  {%- if _content.LINK is defined and _content.LINK is not none 
+        and section == 'LINK' -%}
+    {{- _content.LINK -}}
+  {%- endif -%}{#
+  ##### Network sections ###### 
+#}{%- if _content.NETWORK is defined and _content.NETWORK is not none 
+        and section == 'NETWORK' -%}
+    {{- _content.NETWORK -}}
+  {%- endif -%}
+  {%- if _content.DHCPV4 is defined and _content.DHCPV4 is not none 
+        and section == 'DHCPV4' -%}
+    {{- _content.DHCPV4 -}}
+  {%- endif -%}
+  {%- if _content.DHCPV6 is defined and _content.DHCPV6 is not none 
+        and section == 'DHCPV6' -%}
+    {{- _content.DHCPV6 -}}
+  {%- endif -%}
+  {%- if _content.ADDRESS is defined and _content.ADDRESS is not none 
+        and section == 'ADDRESS' -%}
+    {{- _content.ADDRESS -}}
+  {%- endif -%}
+  {%- if _content.ROUTE is defined and _content.ROUTE is not none 
+        and section == 'ROUTE' -%}
+    {{- _content.ROUTE -}}
+  {%- endif -%}{#
+  ##### NetDev sections ###### 
+#}{%- if _content.NETDEV is defined and _content.NETDEV is not none 
+        and section == 'NETDEV' -%}
+    {{- _content.NETDEV -}}
+  {%- endif -%}
+  {%- if _content.BOND is defined and _content.BOND is not none 
+        and section == 'BOND' -%}
+    {{- _content.BOND -}}
+  {%- elif _content.BRIDGE is defined and _content.BRIDGE is not none 
+        and section == 'BRIDGE' -%}
+    {{- _content.BRIDGE -}}
+  {%- elif _content.FOOOVERUDP is defined and _content.FOOOVERUDP is not none 
+        and section == 'FOOOVERUDP' -%}
+    {{- _content.FOOOVERUDP -}}
+  {%- elif _content.GENEVE is defined and _content.GENEVE is not none 
+        and section == 'GENEVE' -%}
+    {{- _content.GENEVE -}}
+  {%- elif _content.IPVLAN is defined and _content.IPVLAN is not none 
+        and section == 'IPVLAN' -%}
+    {{- _content.IPVLAN -}}
+  {%- elif _content.L2TP is defined and _content.L2TP is not none 
+        and section == 'L2TP' -%}
+    {{- _content.L2TP -}}
+  {%- elif _content.L2TPSESSION is defined and _content.L2TPSESSION is not none 
+        and section == 'L2TPSESSION' -%}
+    {{- _content.L2TPSESSION -}}
+  {%- elif _content.MACSEC is defined and _content.MACSEC is not none 
+        and section == 'MACSEC' -%}
+    {{- _content.MACSEC -}}
+  {%- elif _content.MACSECRECEIVECHANNEL is defined 
+        and _content.MACSECRECEIVECHANNEL is not none 
+        and section == 'MACSECRECEIVECHANNEL' -%}
+    {{- _content.MACSECRECEIVECHANNEL -}}
+  {%- elif _content.MACSECRECEIVEASSOCIATION is defined 
+        and _content.MACSECRECEIVEASSOCIATION is not none 
+        and section == 'MACSECRECEIVEASSOCIATION' -%}
+    {{- _content.MACSECRECEIVEASSOCIATION -}}
+  {%- elif _content.MACSECTRANSMITASSOCIATION is defined 
+        and MACSECTRANSMITASSOCIATION.BRIDGE is not none 
+        and section == 'MACSECTRANSMITASSOCIATION' -%}
+    {{- _content.MACSECTRANSMITASSOCIATION -}}
+  {%- elif _content.MACVLAN is defined and _content.MACVLAN is not none 
+        and section == 'MACVLAN' -%}
+    {{- _content.MACVLAN -}}
+  {%- elif _content.MACVTAP is defined and _content.MACVTAP is not none 
+        and section == 'MACVTAP' -%}
+    {{- _content.MACVTAP -}}
+  {%- elif _content.PEER is defined and _content.PEER is not none 
+        and section == 'PEER' -%}
+    {{- _content.PEER -}}
+  {%- elif _content.TAP is defined and _content.TAP is not none 
+        and section == 'TAP' -%}
+    {{- _content.TAP -}}
+  {%- elif _content.TUN is defined and _content.TUN is not none 
+        and section == 'TUN' -%}
+    {{- _content.TUN -}}
+  {%- elif _content.TUNNEL is defined and _content.TUNNEL is not none 
+        and section == 'TUNNEL' -%}
+    {{- _content.TUNNEL -}}
+  {%- elif _content.VLAN is defined and _content.VLAN is not none 
+        and section == 'VLAN' -%}
+    {{- _content.VLAN -}}
+  {%- elif _content.VRF is defined and _content.VRF is not none 
+        and section == 'VRF' -%}
+    {{- _content.VRF -}}
+  {%- elif _content.VXCAN is defined and _content.VXCAN is not none 
+        and section == 'VXCAN' -%}
+    {{- _content.VXCAN -}}
+  {%- elif _content.VXLAN is defined and _content.VXLAN is not none 
+        and section == 'VXLAN' -%}
+    {{- _content.VXLAN -}}
+  {%- elif _content.WIREGAURD is defined and _content.WIREGAURD is not none 
+        and section == 'WIREGAURD' -%}
+    {{- _content.WIREGAURD -}}
+  {%- elif _content.WIREGUARDPEER is defined and _content.WIREGUARDPEER is not none 
+        and section == 'WIREGUARDPEER' -%}
+    {{- _content.WIREGUARDPEER -}}
+  {%- elif _content.XFRM is defined and _content.XFRM is not none 
+        and section == 'XFRM' -%}
+    {{- _content.XFRM -}}
+  {%- endif -%}
+{%- endif -%}{# End of if section in _workspace.SECTIONS #}
+{%- endmacro -%}
+
+
+{# ############################################################################
+   ############################################################################
+
+  ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ████████╗███████╗
+  ██╔══██╗██╔══██╗██║██║   ██║██╔══██╗╚══██╔══╝██╔════╝
+  ██████╔╝██████╔╝██║██║   ██║███████║   ██║   █████╗  
+  ██╔═══╝ ██╔══██╗██║╚██╗ ██╔╝██╔══██║   ██║   ██╔══╝  
+  ██║     ██║  ██║██║ ╚████╔╝ ██║  ██║   ██║   ███████╗
+  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝  ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+                                                     
+  ███╗   ███╗ █████╗  ██████╗██████╗  ██████╗ ███████╗ 
+  ████╗ ████║██╔══██╗██╔════╝██╔══██╗██╔═══██╗██╔════╝ 
+  ██╔████╔██║███████║██║     ██████╔╝██║   ██║███████╗ 
+  ██║╚██╔╝██║██╔══██║██║     ██╔══██╗██║   ██║╚════██║ 
+  ██║ ╚═╝ ██║██║  ██║╚██████╗██║  ██║╚██████╔╝███████║ 
+  ╚═╝     ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝ 
+
+  ############################################################################
+  ############################################################################}
+
+{%- macro _ANALYSE(section, dataset, key, value) -%}
+{# ##########################################################################
+
+  ██████╗                 █████╗ ███╗   ██╗ █████╗ ██╗  ██╗   ██╗███████╗███████╗
+  ╚════██╗               ██╔══██╗████╗  ██║██╔══██╗██║  ╚██╗ ██╔╝██╔════╝██╔════╝
+   █████╔╝               ███████║██╔██╗ ██║███████║██║   ╚████╔╝ ███████╗█████╗  
+  ██╔═══╝                ██╔══██║██║╚██╗██║██╔══██║██║    ╚██╔╝  ╚════██║██╔══╝  
+  ███████╗██╗    ███████╗██║  ██║██║ ╚████║██║  ██║███████╗██║   ███████║███████╗
+  ╚══════╝╚═╝    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝   ╚══════╝╚══════╝
+  
+  # _ANALYSE arguments:
+  #   () section  : section name like Match, Link, ...
+  #   () dataset  : a dictionary of dictionaries with known section keys
+  #   () key      : dictionary key name specified under systemd_networks, ...
+  #   () value    : values that are set behind the dictionary key 
+  ########################################################################### #}
+{%- set sections = [] -%}
+{{- sections.append(section) -}}
+{%- if dataset is defined and dataset is not none and dataset is iterable 
+      and dataset is not string and dataset is mapping -%}
+  {%- if value is not iterable -%}{#
+    # Is not an object, which can be a boolean or a number.
+    #
+    # :::Example:::
+    #  vars:
+    #     MTUBytes: 1500
+    #     Virtualization: false
+    ################ #}
+    {{- _PROCESS_TYPE(section, dataset[key]['Name'], dataset[key]['Type'], value) -}}
+  {%- elif value is string -%}{# 
+      # An iterable is any object capable of returning its members one at a 
+      # time, permitting it to be iterated over in a for-loop. Familiar 
+      # examples of iterables include lists, tuples, and strings - any such
+      # sequence can be iterated over in a for-loop.
+      #
+      # Values is a string object
+      # :::Example:::
+      #  vars:
+      #     Architecture: x86_64
+      #     Duplex: full
+      #     Host: myhostname
+      ################ #}
+    {{- _PROCESS_TYPE(section, dataset[key]['Name'], dataset[key]['Type'], value) -}}
+  {%- elif value is not mapping  -%}{#
+      # An iterable is any object capable of returning its members one at a 
+      # time, permitting it to be iterated over in a for-loop. Familiar examples
+      # of iterables include lists, tuples, and strings - any such sequence can
+      # be iterated over in a for-loop.
+      #
+      # Values is not a string nor a dictionary but a list object.
+      # :::Example:::
+      #  vars:
+      #     MACAddress: [ '00:01:f1:dc:e7:98', '00:01:54:c1:ab:14' ]
+      ################ #}
+      {%- set _workspace.FLAG = false -%}
+      {%- for tt in value -%}{# Loop through value list #}
+        {%- set _workspace.FLAG = (tt is mapping|bool) -%}{#
+          # If list item is a dictionary set the attribute FLAG from the
+          # container _workspace to True otherwise False. 
+          #}
+        {%- if _workspace.FLAG -%}{#
+          # The attribute FLAG from the container is set with the boolean 
+          # 'True'. This means that each list item contains a dictionary.
+          #}
+          {%- for k, v in tt.items() -%}{#
+            # Loop through each key and value of the dictionary tt.
+            #}
+            {%- if loop.index == 1 and section|upper == 'ADDRESS' -%}{#
+              # If the loop index is 1 of the dictionary and the variable 
+              # section has the string 'ADDRESS' then add the section string
+              # [Address] to the attribute 'ADDRESS' from the container
+              # _workspace.
+              #}
+                {%- if _content.ADDRESS is none -%}
+                  {%- set _content.ADDRESS = '\n[Address]\n' -%}
+                {%- else -%}
+                  {%- set _content.ADDRESS = _content.ADDRESS ~ '\n[Address]\n' -%}
+                {%- endif -%}{# End of if/else  _content.ADDRESS is none #}
+            {%- endif -%}{# End of if/elif loop.index == 1 and section... #}
+            {{- FIND_KEY(sections,  k|upper, v) -}}
+          {%- endfor -%}{# End of for k, v in tt.items() #}
+        {%- endif -%}{# End of if _workspace.FLAG #}
+      {%- endfor -%}{# End of for tt in value #}
+      {%- if _workspace.FLAG is false -%}{#
+        # The attribute 'FLAG' from the container _workspace is set with the 
+        # boolean 'False', which means that the items within the list aren't
+        # dictionarties.
+        #}
+        {{- _PROCESS_TYPE(section, dataset[key]['Name'], dataset[key]['Type'], value) -}}
+      {%- endif -%}
+  {%- elif value is mapping -%}{#
+      # An iterable is any object capable of returning its members one at a 
+      # time, permitting it to be iterated over in a for-loop. Familiar examples
+      # of iterables include lists, tuples, and strings - any such sequence can
+      # be iterated over in a for-loop.
+      #
+      # Values is not a string nor list but a dictionary object
+      # :::Example:::
+      #  vars:
+      #   systemd-networks:
+      #     - interface: eth0
+      #       Match:
+      #         MACAddress: [ '00:01:f1:dc:e7:98', '00:01:54:c1:ab:14' ]
+      #         Virtualization: true
+      #       Link:
+      #         Architecture : x86_64
+      #         ARP: true
+      #         MTUBytes: 1500
+      #         Multicast: true
+      #       NetDev:
+      #         kind: bond
+      ################ #}
+      {%- for k, v in value.items() -%}
+        {{- FIND_KEY(sections,  k|upper, v) -}}
+      {%- endfor -%}
+  {%- endif -%}
+{%- else -%}{#
+  # dataset is set as none 
+  #}
+  {%- if value is mapping -%}{#
+    # An iterable is any object capable of returning its members one at a 
+    # time, permitting it to be iterated over in a for-loop. Familiar examples
+    # of iterables include lists, tuples, and strings - any such sequence can
+    # be iterated over in a for-loop.
+    #
+    # Values is not a string nor list but a dictionary object
+    # :::Example:::
+    #  vars:
+    #   systemd-networks:
+    #     - interface: eth0
+    #       Match:
+    #         MACAddress: [ '00:01:f1:dc:e7:98', '00:01:54:c1:ab:14' ]
+    #         Virtualization: true
+    #       Link:
+    #         Architecture : x86_64
+    #         ARP: true
+    #         MTUBytes: 1500
+    #         Multicast: true
+    #       NetDev:
+    #         kind: bond
+    ################ #}
+    {%- for k, v in value.items() -%}
+      {{- FIND_KEY(sections,  k|upper, v) -}}
+    {%- endfor -%}
+  {%- elif value is not mapping -%}{#
+    # An iterable is any object capable of returning its members one at a 
+    # time, permitting it to be iterated over in a for-loop. Familiar examples
+    # of iterables include lists, tuples, and strings - any such sequence can
+    # be iterated over in a for-loop.
+    #
+    # :::Example:::
+    #  vars:
+    #   systemd-networks:
+    #     - interface: eth0
+    #       Route:
+    #         - Gateway: 192.168.0.1
+    ################ #}
+    {%- for listitem in value -%}
+      {%- if section|upper == 'ROUTE' -%}{#
+        # If the variable section has the string 'ROUTE' then add the section
+        # string [Route] to the attribute 'ROUTE' from the container _workspace.
+        #}
+        {%- if _content.ROUTE is none -%}
+          {%- set _content.ROUTE = '\n[Route]\n' -%}
+        {%- else -%}
+          {%- set _content.ROUTE = _content.ROUTE ~ '\n[Route]\n' -%}
+        {%- endif -%}{# End of if/else  _content.ROUTE is none #}
+      {%- endif -%}{# End of if/elif loop.index == 1 and section... #}
+      {{- FIND_KEY(sections,  section|upper, listitem) -}}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endif -%}
+{%- endmacro -%}{# End of macro _ANALYSE() #}
+
+
+{%- macro _PROCESS_TYPE(section, key, type, value) -%}
+{# ##########################################################################
+
+  ██████╗                ██████╗ ██████╗  ██████╗  ██████╗███████╗███████╗███████╗     ████████╗██╗   ██╗██████╗ ███████╗
+  ╚════██╗               ██╔══██╗██╔══██╗██╔═══██╗██╔════╝██╔════╝██╔════╝██╔════╝     ╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝
+   █████╔╝               ██████╔╝██████╔╝██║   ██║██║     █████╗  ███████╗███████╗        ██║    ╚████╔╝ ██████╔╝█████╗  
+   ╚═══██╗               ██╔═══╝ ██╔══██╗██║   ██║██║     ██╔══╝  ╚════██║╚════██║        ██║     ╚██╔╝  ██╔═══╝ ██╔══╝  
+  ██████╔╝██╗    ███████╗██║     ██║  ██║╚██████╔╝╚██████╗███████╗███████║███████║███████╗██║      ██║   ██║     ███████╗
+  ╚═════╝ ╚═╝    ╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚═════╝╚══════╝╚══════╝╚══════╝╚══════╝╚═╝      ╚═╝   ╚═╝     ╚══════╝
+
+  # _PROCESS_TYPE arguments:
+  #   () section  : section names like Network, DHCPv4, DHCPv6, ...
+  #   () key      : dictionary key name specified under systemd_networks, ...
+  #   () type     : type of object that we expect from that specific dictionary
+  #                 key.
+  #   () values   : values that are set behind the dictionary key.
+  ###########################################################################
+  # 
+  # Possible object types are:
+  #   boolean       : a binary variable that can have one of two possible 
+  #                   values, 0 (false) or 1 (true).
+  #   string        : a traditionally a sequence of characters,
+  #   number        : a mathematical object used to count, measure, and label
+  #   list          : an abstract data type that represents a countable number 
+  #                   of ordered values
+  #   string_boolean: possible a string object otherwise a boolean
+  #   string_number : possible a string object otherwise a number
+  #   string_list   : possible a string object otherwise a list
+  #   multi         : is a list where each entry requires to have the same key
+  #                   name                                      #}
+{%- set _ns = namespace(vlist=none, processed=none) -%}
+{%- if section is defined and key is defined and type is defined 
+      and value is defined and _workspace.SECTIONS is not none 
+      and section in _workspace.SECTIONS and key is string 
+      and type in _types and value is not none -%}
+  {%- if type|lower == 'boolean' -%}{# 
+      # A binary variable that can have one of two possible values, 0 (false) or
+      # 1 (true).
+      # 
+      # :::Example:::
+      #  key    : Virtualization
+      #  value  : True  
+    #}
+    {%- set _ns.processed = key ~ '=' ~ ((value|bool)
+      | default(False)
+      | ternary( True, False)) -%}
+  {%- elif type|lower == 'string' -%}{#
+      # A traditionally a sequence of characters.
+      #
+      # :::Example:::
+      #  key    : Host
+      #  value  : myhostname
+    #}
+    {%- set _ns.processed = ((value is string)
+      | ternary( '', '#')) ~ key ~ '=' ~ value -%}
+  {%- elif type|lower == 'number' -%}{#
+      # A mathematical object used to count, measure, and label.
+      #
+      # :::Example:::
+      #  key    : MTUBytes
+      #  value  : 1500
+    #}
+    {%- set _ns.processed = ((value is number)
+      | ternary( '', '#')) ~ key ~ '=' ~ value -%}
+  {%- elif type|lower == 'list' -%}{#
+      # An abstract data type that represents a countable number of ordered 
+      # values.
+      #
+      # :::Example:::
+      #  key    : MACAddress
+      #  value  : [ '00:01:ff:8b:4a:21' , '00:01:c4:da:7f:39' ]
+    #}
+    {%- set _ns.processed = ((value is iterable and value is not string) 
+      | ternary( '', '#')) ~ key ~ '=' ~ value|join(' ') -%}
+  {%- elif type|lower == 'string_boolean' -%}{#
+      # A traditionally a sequence of characters OR a binary variable that can 
+      # have one of two possible values, 0 (false) or 1 (true).
+      #
+      # :::Example:::
+      #  key    : DNSOverTLS
+      #  value  : opportunistic
+      #
+      # OR 
+      #  key    : DNSOverTLS
+      #  value  : False
+    #}
+    {%- if value is string -%}
+      {%- set _ns.processed = key ~ '=' ~ value|lower -%}
+    {%- else -%}
+      {%- set _ns.processed = key ~ '=' ~ ((value|bool) 
+        | default(false) 
+        | ternary( True, False)) -%}
+    {%- endif -%}{# End of if value is string #}
+  {%- elif type|lower == 'string_number' -%}{#
+      # A traditionally a sequence of characters OR a mathematical object used
+      # to count, measure, and label.
+      #
+      # :::Example:::
+      #  key    : MaxAttempts
+      #  value  : infinity
+      #
+      # OR 
+      #  key    : MaxAttempts
+      #  value  : 0
+    #}
+    {%- if value is string -%}
+      {%- set _ns.processed = key ~ '=' ~ value -%}
+    {%- else -%}
+      {%- set _ns.processed = key ~ '=' ~ value -%}{%- endif -%}
+  {%- elif type|lower == 'string_list' -%}{#
+      # A traditionally a sequence of characters OR an abstract data type that 
+      # represents a countable number of ordered values.
+      #
+      # :::Example:::
+      #  key    : MACAddress
+      #  value  : 00:01:ff:8b:4a:21
+      #
+      # OR
+      #  key    : MACAddress
+      #  value  : [ '00:01:ff:8b:4a:21' , '00:01:c4:da:7f:39' ]
+    #}
+    {%- if value is string -%}
+      {%- set _ns.processed = key ~ '=' ~ value -%}
+    {%- else -%}
+      {%- set _ns.processed = key ~ '=' ~ value|join(' ') -%}
+    {%- endif -%}
+  {%- elif type|lower == 'multi' -%}{#
+      #
+      # If the value behind the key is set as multi which refers that this key 
+      # can occur more than once.
+      # 
+      # :::Example:::
+      #  vars:
+      #   systemd-networks:
+      #     - interface: eth0
+      #       DNS:
+      #         - 192.168.254.10
+      #         - 192.168.254.11
+      # 
+      # This will create  an eth0.network file that will have the key DNS more 
+      # than once. Other possible DNS input can be:
+      #       DNS: [ '192.168.254.10', '192.168.254.11' ]
+      # OR
+      #       DNS: 192.168.254.10 192.168.254.11
+      #
+      # ::: Example - eth0.network :::
+      #   [Network]
+      #   DNS=192.168.251.10
+      #   DNS=192.168.251.11
+      #
+    #}
+    {%- if value is string -%}
+      {%- set _ns.vlist = value.split(' ') -%}
+    {%- elif value is iterable and value is not mapping -%}
+      {%- set _ns.vlist = value -%}
+    {%- endif -%}{# 
+      # The attribute 'vlist' from container '_ns' contains a list.
+      # A loop through that list will create a newline for each list entry using
+      # the same key name and update the attribute 'processed' from the 
+      # container '_ns'.
+      #
+      # :::Example:::_ns.vlist
+      #   _ns.vlist = [ '192.168.251.10' , '192.168.254.11' ]
+      #
+      # :::Example:::_ns.processed
+      #   _ns.processed: "192.168.254.10\n192.168.254.11"
+    #}
+    {%- for ct in _ns.vlist -%}
+      {%- if loop.first -%}
+        {%- set _ns.processed = '' -%}
+      {%- endif -%}{# End of if loop.first #}
+      {%- if loop.last -%}
+        {%- set _ns.processed = _ns.processed ~ key ~ '=' ~ ct  -%}
+      {%- else -%}
+        {%- set _ns.processed = _ns.processed ~ key ~ '=' ~ ct ~ '\n' -%}
+      {%- endif -%}{# End of if loop.last #}
+    {%- endfor -%}{# End of for ct in _ns.vlist #}
+  {%- endif -%}{# End of if type|lower == ... #}
+  {%- if _ns.processed is not none -%}{#
+    #########################################
+    # RUN PRIVATE MACRO _BUILD()
+    ######################################### #}
+    {{- _BUILD( section, _ns.processed) -}}
+  {%- endif -%}{# End of if type|lower == ???? ... #}
+{%- endif -%}{# if section is defined and key is defined and type is ... #}
+{%- endmacro -%}
+
+
+{%- macro _BUILD(section, line) -%}
+{# ##########################################################################
+
+  ██╗  ██╗               ██████╗ ██╗   ██╗██╗██╗     ██████╗ 
+  ██║  ██║               ██╔══██╗██║   ██║██║██║     ██╔══██╗
+  ███████║               ██████╔╝██║   ██║██║██║     ██║  ██║
+  ╚════██║               ██╔══██╗██║   ██║██║██║     ██║  ██║
+       ██║██╗    ███████╗██████╔╝╚██████╔╝██║███████╗██████╔╝
+       ╚═╝╚═╝    ╚══════╝╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ 
+
+  # _BUILD arguments:
+  #   () section    : section name
+  #   () line       : data
+  ########################################################################### #}
+{%- set parameter = line.split('=') -%}
+{%- if section == 'MATCH' -%}{#
+  # The provided data line is part of section [Match] and is required to be
+  # added to string attribute 'MATCH' from container '_content'. #}
+  {%- if _content.MATCH is none -%}{#
+    # The variable _content.MATCH is empty. The first step is to set a section
+    # into the variable _content.MATCH. #}
+    {%- set _content.MATCH = '\n[' ~  section|capitalize  ~']\n' -%}
+  {%- endif -%}{# End of if _content.MATCH is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MATCH -%}
+    {%- set _content.MATCH = _content.MATCH ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MATCH #}
+{# ########## #}
+{%- elif section == 'LINK' -%}{#
+  # The provided data line is part of section [Link] and is required to be
+  # added to string attribute 'LINK' from container '_content'. #}
+  {%- if _content.LINK is none -%}{#
+    # The variable _content.LINK is empty. The first step is to set a section
+    # into the variable _content.LINK. #}
+    {%- set _content.LINK = '\n[' ~  section|capitalize  ~']\n' -%}
+  {%- endif -%}{# End of if _content.LINK is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.LINK -%}
+    {%- set _content.LINK = _content.LINK ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.LINK #}
+{# ########## #}
+{%- elif section == 'NETDEV' -%}{#
+  # The provided data line is part of section [NetDev] and is required to be
+  # added to string attribute 'NETDEV' from container '_content'. #}
+  {%- if _content.NETDEV is none -%}{#
+    # The variable _content.NETDEV is empty. The first step is to set a section
+    # into the variable _content.NETDEV. #}
+    {%- set _content.NETDEV = '\n[NetDev]\n' -%}
+  {%- endif -%}{# End of if _content.NETDEV is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.NETDEV -%}
+    {%- set _content.NETDEV = _content.NETDEV ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.NETDEV #}
+{# ########## #}
+{%- elif section == 'BOND' -%}{#
+  # The provided data line is part of section [Bond] and is required to be
+  # added to string attribute 'BOND' from container '_content'. #}
+  {%- if _content.BOND is none -%}{#
+    # The variable _content.BOND is empty. The first step is to set a section
+    # into the variable _content.BOND. #}
+    {%- set _content.BOND = '\n[' ~  section|capitalize  ~']\n' -%}
+  {%- endif -%}{# End of if _content.BOND is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.BOND -%}
+    {%- set _content.BOND = _content.BOND ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.BOND #}
+{# ########## #}
+{%- elif section == 'BRIDGE' -%}{#
+  # The provided data line is part of section [Bridge] and is required to be
+  # added to string attribute 'BRIDGE' from container '_content'. #}
+  {%- if _content.BRIDGE is none -%}{#
+    # The variable _content.BRIDGE is empty. The first step is to set a section
+    # into the variable _content.BRIDGE. #}
+    {%- set _content.BRIDGE = '\n[' ~  section|capitalize  ~']\n' -%}
+  {%- endif -%}{# End of if _content.BRIDGE is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.BRIDGE -%}
+    {%- set _content.BRIDGE = _content.BRIDGE ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.BRIDGE #}
+{# ########## #}
+{%- elif section == 'FOOOVERUDP' -%}{#
+  # The provided data line is part of section [FooOverUDP] and is required to be
+  # added to string attribute 'FOOOVERUDP' from container '_content'. #}
+  {%- if _content.NETDEV is none -%}{#
+    # The variable _content.FOOOVERUDP is empty. The first step is to set a 
+    # section into the variable _content.FOOOVERUDP. #}
+    {%- set _content.FOOOVERUDP = '\n[FooOverUDP]\n' -%}
+  {%- endif -%}{# End of if _content.FOOOVERUDP is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.FOOOVERUDP -%}
+    {%- set _content.FOOOVERUDP = _content.FOOOVERUDP ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.FOOOVERUDP #}
+{# ########## #}
+{%- elif section == 'GENEVE' -%}{#
+  # The provided data line is part of section [Geneve] and is required to be
+  # added to string attribute 'GENEVE' from container '_content'. #}
+  {%- if _content.GENEVE is none -%}{#
+    # The variable _content.GENEVE is empty. The first step is to set a section
+    # into the variable _content.GENEVE. #}
+    {%- set _content.GENEVE = '\n[' ~  section|capitalize  ~']\n' -%}
+  {%- endif -%}{# End of if _content.GENEVE is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.GENEVE -%}
+    {%- set _content.GENEVE = _content.GENEVE ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.NETDEV #}
+{# ########## #}
+{%- elif section == 'IPVLAN' -%}{#
+  # The provided data line is part of section [IPVLAN] and is required to be
+  # added to string attribute 'IPVLAN' from container '_content'. #}
+  {%- if _content.IPVLAN is none -%}{#
+    # The variable _content.IPVLAN is empty. The first step is to set a section
+    # into the variable _content.IPVLAN. #}
+    {%- set _content.IPVLAN = '\n[IPVLAN]\n' -%}
+  {%- endif -%}{# End of if _content.IPVLAN is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.IPVLAN -%}
+    {%- set _content.IPVLAN = _content.IPVLAN ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.IPVLAN #}
+{# ########## #}
+{%- elif section == 'IPVTAP' -%}{#
+  # The provided data line is part of section [IPVTAP] and is required to be
+  # added to string attribute 'IPVTAP' from container '_content'. #}
+  {%- if _content.IPVTAP is none -%}{#
+    # The variable _content.IPVTAP is empty. The first step is to set a section
+    # into the variable _content.IPVTAP. #}
+    {%- set _content.IPVTAP = '\n[IPVTAP]\n' -%}
+  {%- endif -%}{# End of if _content.IPVTAP is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.IPVTAP -%}
+    {%- set _content.IPVTAP = _content.IPVTAP ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.IPVTAP #}
+{# ########## #}
+{%- elif section == 'L2TP' -%}{#
+  # The provided data line is part of section [L2TP] and is required to be
+  # added to string attribute 'L2TP' from container '_content'. #}
+  {%- if _content.L2TP is none -%}{#
+    # The variable _content.L2TP is empty. The first step is to set a section
+    # into the variable _content.L2TP. #}
+    {%- set _content.L2TP = '\n[L2TP]\n' -%}
+  {%- endif -%}{# End of if _content.L2TP is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.L2TP -%}
+    {%- set _content.L2TP = _content.L2TP ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.L2TP #}
+{# ########## #}
+{%- elif section == 'L2TPSESSION' -%}{#
+  # The provided data line is part of section [L2TPSession] and is required to
+  # be added to string attribute 'L2TPSESSION' from container '_content'. #}
+  {%- if _content.L2TPSESSION is none -%}{#
+    # The variable _content.L2TPSESSION is empty. The first step is to set a 
+    # section into the variable _content.L2TPSESSION. #}
+    {%- set _content.L2TPSESSION = '\n[L2TPSession]\n' -%}
+  {%- endif -%}{# End of if _content.L2TPSESSION is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.L2TPSESSION -%}
+    {%- set _content.L2TPSESSION = _content.L2TPSESSION ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.L2TPSESSION #}
+{# ########## #}
+{%- elif section == 'MACSEC' -%}{#
+  # The provided data line is part of section [MACsec] and is required to
+  # be added to string attribute 'MACSEC' from container '_content'. #}
+  {%- if _content.MACSEC is none -%}{#
+    # The variable _content.MACSEC is empty. The first step is to set a 
+    # section into the variable _content.MACSEC. #}
+    {%- set _content.MACSEC = '\n[MACsec]\n' -%}
+  {%- endif -%}{# End of if _content.MACSEC is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MACSEC -%}
+    {%- set _content.MACSEC = _content.MACSEC ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MACSEC #}
+{# ########## #}
+{%- elif section == 'MACSECRECEIVECHANNEL' -%}{#
+  # The provided data line is part of section [MACsecReceiveChannel] and is 
+  # required to be added to string attribute 'MACSECRECEIVECHANNEL' from 
+  # container '_content'. #}
+  {%- if _content.MACSECRECEIVECHANNEL is none -%}{#
+    # The variable _content.MACSECRECEIVECHANNEL is empty. The first step is to 
+    # set a section into the variable _content.MACSECRECEIVECHANNEL. #}
+    {%- set _content.MACSECRECEIVECHANNEL = '\n[MACsecReceiveChannel]\n' -%}
+  {%- endif -%}{# End of if _content.MACSECRECEIVECHANNEL is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MACSECRECEIVECHANNEL -%}
+    {%- set _content.MACSECRECEIVECHANNEL = _content.MACSECRECEIVECHANNEL 
+            ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MACSECRECEIVECHANNEL #}
+{# ########## #}
+{%- elif section == 'MACSECRECEIVEASSOCIATION' -%}{#
+  # The provided data line is part of section [MACsecReceiveAssociation] and is required to
+  # be added to string attribute 'MACSECRECEIVEASSOCIATION' from container '_content'. #}
+  {%- if _content.MACSECRECEIVEASSOCIATION is none -%}{#
+    # The variable _content.MACSECRECEIVEASSOCIATION is empty. The first step is to set a 
+    # section into the variable _content.MACSECRECEIVEASSOCIATION. #}
+    {%- set _content.MACSECRECEIVEASSOCIATION = '\n[MACsecReceiveAssociation]\n' -%}
+  {%- endif -%}{# End of if _content.MACSECRECEIVEASSOCIATION is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MACSECRECEIVEASSOCIATION -%}
+    {%- set _content.MACSECRECEIVEASSOCIATION = _content.MACSECRECEIVEASSOCIATION ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MACSECRECEIVEASSOCIATION #}
+{# ########## #}
+{%- elif section == 'MACSECTRANSMITASSOCIATION' -%}{#
+  # The provided data line is part of section [MACsecTransmitAssociation] and is required to
+  # be added to string attribute 'MACSECTRANSMITASSOCIATION' from container '_content'. #}
+  {%- if _content.MACSECTRANSMITASSOCIATION is none -%}{#
+    # The variable _content.MACSECTRANSMITASSOCIATION is empty. The first step is to set a 
+    # section into the variable _content.MACSECTRANSMITASSOCIATION. #}
+    {%- set _content.MACSECTRANSMITASSOCIATION = '\n[MACsecTransmitAssociation]\n' -%}
+  {%- endif -%}{# End of if _content.MACSECTRANSMITASSOCIATION is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MACSECTRANSMITASSOCIATION -%}
+    {%- set _content.MACSECTRANSMITASSOCIATION = _content.MACSECTRANSMITASSOCIATION ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MACSECTRANSMITASSOCIATION #}
+{# ########## #}
+{%- elif section == 'MACVLAN' -%}{#
+  # The provided data line is part of section [MACVLAN] and is required to
+  # be added to string attribute 'MACVLAN' from container '_content'. #}
+  {%- if _content.MACVLAN is none -%}{#
+    # The variable _content.MACVLAN is empty. The first step is to set a 
+    # section into the variable _content.MACVLAN. #}
+    {%- set _content.MACVLAN = '\n[MACVLAN]\n' -%}
+  {%- endif -%}{# End of if _content.MACVLAN is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MACVLAN -%}
+    {%- set _content.MACVLAN = _content.MACVLAN ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MACVLAN #}
+{# ########## #}
+{%- elif section == 'MACVTAP' -%}{#
+  # The provided data line is part of section [MACVTAP] and is required to
+  # be added to string attribute 'MACVTAP' from container '_content'. #}
+  {%- if _content.MACVTAP is none -%}{#
+    # The variable _content.MACVTAP is empty. The first step is to set a 
+    # section into the variable _content.MACVTAP. #}
+    {%- set _content.MACVTAP = '\n[MACVTAP]\n' -%}
+  {%- endif -%}{# End of if _content.MACVTAP is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.MACVTAP -%}
+    {%- set _content.MACVTAP = _content.MACVTAP ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.MACVTAP #}
+{# ########## #}
+{%- elif section == 'PEER' -%}{#
+  # The provided data line is part of section [Peer] and is required to
+  # be added to string attribute 'PEER' from container '_content'. #}
+  {%- if _content.PEER is none -%}{#
+    # The variable _content.PEER is empty. The first step is to set a 
+    # section into the variable _content.PEER. #}
+    {%- set _content.PEER = '\n[Peer]\n' -%}
+  {%- endif -%}{# End of if _content.PEER is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.PEER -%}
+    {%- set _content.PEER = _content.PEER ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.PEER #}
+{# ########## #}
+{%- elif section == 'TAP' -%}{#
+  # The provided data line is part of section [Tap] and is required to
+  # be added to string attribute 'TAP' from container '_content'. #}
+  {%- if _content.TAP is none -%}{#
+    # The variable _content.TAP is empty. The first step is to set a 
+    # section into the variable _content.TAP. #}
+    {%- set _content.TAP = '\n[Tap]\n' -%}
+  {%- endif -%}{# End of if _content.TAP is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.TAP -%}
+    {%- set _content.TAP = _content.TAP ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.TAP #}
+{# ########## #}
+{%- elif section == 'TUN' -%}{#
+  # The provided data line is part of section [Tun] and is required to
+  # be added to string attribute 'TUN' from container '_content'. #}
+  {%- if _content.TUN is none -%}{#
+    # The variable _content.TUN is empty. The first step is to set a 
+    # section into the variable _content.TUN. #}
+    {%- set _content.TUN = '\n[Tun]\n' -%}
+  {%- endif -%}{# End of if _content.TUN is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.TUN -%}
+    {%- set _content.TUN = _content.TUN ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.TUN #}
+{# ########## #}
+{%- elif section == 'TUNNEL' -%}{#
+  # The provided data line is part of section [Tunnel] and is required to
+  # be added to string attribute 'TUNNEL' from container '_content'. #}
+  {%- if _content.TUNNEL is none -%}{#
+    # The variable _content.TUNNEL is empty. The first step is to set a 
+    # section into the variable _content.TUNNEL. #}
+    {%- set _content.TUNNEL = '\n[Tunnel]\n' -%}
+  {%- endif -%}{# End of if _content.TUNNEL is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.TUNNEL -%}
+    {%- set _content.TUNNEL = _content.TUNNEL ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.TUNNEL #}
+{# ########## #}
+{%- elif section == 'VLAN' -%}{#
+  # The provided data line is part of section [VLAN] and is required to
+  # be added to string attribute 'VLAN' from container '_content'. #}
+  {%- if _content.VLAN is none -%}{#
+    # The variable _content.VLAN is empty. The first step is to set a 
+    # section into the variable _content.VLAN. #}
+    {%- set _content.VLAN = '\n[VLAN]\n' -%}
+  {%- endif -%}{# End of if _content.VLAN is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.VLAN -%}
+    {%- set _content.VLAN = _content.VLAN ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.VLAN #}
+{# ########## #}
+{%- elif section == 'VRF' -%}{#
+  # The provided data line is part of section [VRF] and is required to
+  # be added to string attribute 'VRF' from container '_content'. #}
+  {%- if _content.VRF is none -%}{#
+    # The variable _content.VRF is empty. The first step is to set a 
+    # section into the variable _content.VRF. #}
+    {%- set _content.VRF = '\n[VRF]\n' -%}
+  {%- endif -%}{# End of if _content.VRF is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.VRF -%}
+    {%- set _content.VRF = _content.VRF ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.VRF #}
+{# ########## #}
+{%- elif section == 'VXCAN' -%}{#
+  # The provided data line is part of section [VXCAN] and is required to
+  # be added to string attribute 'VXCAN' from container '_content'. #}
+  {%- if _content.VXCAN is none -%}{#
+    # The variable _content.VXCAN is empty. The first step is to set a 
+    # section into the variable _content.VXCAN. #}
+    {%- set _content.VXCAN = '\n[VXCAN]\n' -%}
+  {%- endif -%}{# End of if _content.VXCAN is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.VXCAN -%}
+    {%- set _content.VXCAN = _content.VXCAN ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.VXCAN #}
+{# ########## #}
+{%- elif section == 'VXLAN' -%}{#
+  # The provided data line is part of section [VXLAN] and is required to
+  # be added to string attribute 'VXLAN' from container '_content'. #}
+  {%- if _content.VXLAN is none -%}{#
+    # The variable _content.VXLAN is empty. The first step is to set a 
+    # section into the variable _content.VXLAN. #}
+    {%- set _content.VXLAN = '\n[VXLAN]\n' -%}
+  {%- endif -%}{# End of if _content.VXLAN is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.VXLAN -%}
+    {%- set _content.VXLAN = _content.VXLAN ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.VXLAN #}
+{# ########## #}
+{%- elif section == 'WIREGUARD' -%}{#
+  # The provided data line is part of section [WireGuard] and is required to
+  # be added to string attribute 'WIREGUARD' from container '_content'. #}
+  {%- if _content.WIREGUARD is none -%}{#
+    # The variable _content.WIREGUARD is empty. The first step is to set a 
+    # section into the variable _content.WIREGUARD. #}
+    {%- set _content.WIREGUARD = '\n[WireGuard]\n' -%}
+  {%- endif -%}{# End of if _content.WIREGUARD is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.WIREGUARD -%}
+    {%- set _content.WIREGUARD = _content.WIREGUARD ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.WIREGUARD #}
+{# ########## #}
+{%- elif section == 'WIREGUARDPEER' -%}{#
+  # The provided data line is part of section [WireGuardPeer] and is required to
+  # be added to string attribute 'WIREGUARDPEER' from container '_content'. #}
+  {%- if _content.WIREGUARDPEER is none -%}{#
+    # The variable _content.WIREGUARDPEER is empty. The first step is to set a 
+    # section into the variable _content.WIREGUARDPEER. #}
+    {%- set _content.WIREGUARDPEER = '\n[WireGuardPeer]\n' -%}
+  {%- endif -%}{# End of if _content.WIREGUARDPEER is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.WIREGUARDPEER -%}
+    {%- set _content.WIREGUARDPEER = _content.WIREGUARDPEER ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.WIREGUARDPEER #}
+{# ########## #}
+{%- elif section == 'XFRM' -%}{#
+  # The provided data line is part of section [Xfrm] and is required to
+  # be added to string attribute 'XFRM' from container '_content'. #}
+  {%- if _content.XFRM is none -%}{#
+    # The variable _content.XFRM is empty. The first step is to set a 
+    # section into the variable _content.XFRM. #}
+    {%- set _content.XFRM = '\n[Xfrm]\n' -%}
+  {%- endif -%}{# End of if _content.XFRM is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.XFRM -%}
+    {%- set _content.XFRM = _content.XFRM ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.XFRM #}
+{# ########## #}
+{%- elif section == 'ADDRESS' -%}{#
+  # The provided data line is part of section [Address] and is required to be
+  # added to string attribute 'ADDRESS' from container '_content'. #}
+  {%- if _content.ADDRESS is none -%}{#
+    # The variable _content.ADDRESS is empty. The first step is to set a section
+    # into the variable _content.ADDRESS. #}
+    {%- set _content.ADDRESS = "\n[Address]\n" -%}
+  {%- endif -%}{# End of if _content.ADDRESS is none #}
+  {%- set _content.ADDRESS = _content.ADDRESS ~ line ~ '\n' -%}
+{# ########## #}
+{%- elif section == 'DHCPV4' -%}{#
+  # The provided data line is part of section [DHCPv4] and is required to be
+  # added to string attribute 'DHCPV4' from container '_content'. #}
+  {%- if _content.DHCPV4 is none -%}{#
+    # The variable _content.DHCPV4 is empty. The first step is to set a section
+    # into the variable _content.DHCPV4. #}
+    {%- set _content.DHCPV4 = '\n[DHCPv4]\n' -%}
+  {%- endif -%}{# End of if _content.DHCPV4 is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.DHCPV4 -%}
+    {%- set _content.DHCPV4 = _content.DHCPV4 ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.DHCPV4 #}
+{# ########## #}
+{%- elif section == 'DHCPV6' -%}{#
+  # The provided data line is part of section [DHCPv6] and is required to be
+  # added to string attribute 'DHCPV6' from container '_content'. #}
+  {%- if _content.DHCPV6 is none -%}{#
+    # The variable _content.DHCPV6 is empty. The first step is to set a section
+    # into the variable _content.DHCPV6. #}
+    {%- set _content.DHCPV6 = '\n[DHCPv6]\n' -%}
+  {%- endif -%}{# End of if _content.DHCPV6 is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.DHCPV6 -%}
+    {%- set _content.DHCPV6 = _content.DHCPV6 ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.DHCPV6 #}
+{# ########## #}
+{%- elif section == 'NETWORK' -%}{#
+  # The provided data line is part of section [Network] and is required to be
+  # added to string attribute 'NETWORK' from container '_content'. #}
+  {%- if _content.NETWORK is none -%}{#
+    # The variable _content.NETWORK is empty. The first step is to set a section
+    # into the variable _content.NETWORK. #}
+    {%- set _content.NETWORK = '\n[Network]\n' -%}
+  {%- endif -%}{# End of if _content.NETWORK is none #}
+  {%- if '\n' ~ parameter[0] ~ '=' not in _content.NETWORK -%}
+    {%- set _content.NETWORK = _content.NETWORK ~ line ~ '\n' -%}
+  {%- endif -%}{# End of if '\n' ~ parameter[0] ~ '=' not in _content.NETWORK #}
+{# ########## #}
+{%- elif section == 'ROUTE' -%}{#
+  # The provided data line is part of section [Route] and is required to be
+  # added to string attribute 'ROUTE' from container '_content'. #}
+  {%- if _content.ROUTE is none -%}{#
+    # The variable _content.ROUTE is empty. The first step is to set a section
+    # into the variable _content.ROUTE. #}
+    {%- set _content.ROUTE = "\n[Route]\n" -%}
+  {%- endif -%}{# End of if _content.ROUTE is none #}
+  {%- set _content.ROUTE = _content.ROUTE ~ line ~ '\n' -%}
+{# ########## #}
+{%- endif -%}
+{%- endmacro -%}

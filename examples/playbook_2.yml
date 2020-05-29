@@ -1,0 +1,103 @@
+---
+############################
+# For creating a seperate .link file and not adding link items into the
+# .network file requires to specify the item udev under systemd_networks:
+#  vars:
+#    systemd_networks:
+#      udev: yes 
+# OR 
+#  vars:
+#    systemd_networks:
+#      udev: True
+############################
+#
+# File content of /etc/systemd/network/enp1s0.network 
+#
+# [Match]
+# Name=enp1s0
+# Architecture=x86-64
+# Driver=virtio_net
+# Host=myhost1
+# Virtualization: True
+#  
+# [Address]
+# Address=192.168.1.16/24
+# 
+# [Network]
+# DHCP=False
+# Description=Management interface
+# 
+# [Route]
+# Gateway=192.168.1.1
+# GatewayOnLink=True
+# MTUBytes=1500
+#
+#
+#
+# File content of /etc/systemd/network/enp1s0.link
+#
+# [Match]
+# Architecture=x86-64
+# Driver=virtio_net
+# Host=myhost1
+# Virtualization=True
+# 
+# [Link]
+# MACAddress=52:54:00:00:ee:da
+# MTUBytes=1500
+#
+############################
+
+- hosts: myhost1
+  remote_user: ansible
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_networks:
+      - interface: enp1s0
+        udev: yes
+        Address: 192.168.1.16/24
+        Architecture: x86-64
+        ARP: yes
+        DHCP: no
+        description: Management interface
+        Driver: virtio_net        
+        Gateway: 192.168.1.1
+        GatewayOnLink: yes
+        Host: myhost1         
+        MACAddress: 52:54:00:00:ee:da
+        Multicast: yes
+        MTUBytes: 1500
+        Virtualization: yes      
+      
+############################
+# Is equal like items below
+############################
+  vars:
+    systemd_networks:
+      - interface: enp1s0
+        udev: yes
+        Match:
+          Architecture: x86-64
+          Driver: virtio_net
+          Host: myhost1         
+          Virtualization: yes
+        Link:
+          ARP: no
+          MACAddress: 52:54:00:00:ee:da
+          Multicast: yes
+          MTUBytes: 1500
+        Network:
+          DHCP: false
+          description: Management interface  
+        Address:
+            - Address: 192.168.1.16/24
+        Route: 
+          - Gateway: 192.168.1.1
+            GatewayOnLink: yes
+            MTUBytes: 1500

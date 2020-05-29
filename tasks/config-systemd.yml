@@ -1,0 +1,105 @@
+---
+- name: config-systemd | Create systemd-resolved config
+  template:
+    src: 'etc/systemd/resolved.conf.j2'
+    dest: '/etc/systemd/resolved.conf'
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  when:
+    - systemd_resolved | length > 0
+  notify:
+    - Restart systemd-resolved
+  tags: 
+    - config-systemd
+    - systemd-resolved
+    - create file
+
+# .netdev files: they will create a virtual network device for a matching
+#  environment
+- name: config-systemd | Create systemd-networkd network netdev(s)
+  template:
+    src: 'etc/systemd/network/systemd-netdev.j2'
+    dest: '/etc/systemd/network/{{ (item.interface) ~ ".netdev" }}'
+    owner: 'root'
+    group: 'root'
+    mode: u=rw,g=r,o=r
+  with_items: '{{ systemd_networks }}'
+  when: 
+    - systemd_networks is defined
+    - systemd_networks is iterable
+    - systemd_networks is not string
+    - item.interface is defined
+    - item.interface is not none
+    - item.Kind is defined or item.kind is defined or item.KIND is defined
+        or item.NetDev.kind is defined or item.NetDev.Kind is defined or item.NetDev.KIND is defined
+        or item.Netdev.kind is defined or item.Netdev.Kind is defined or item.Netdev.KIND is defined
+        or item.NETDEV.kind is defined or item.NETDEV.Kind is defined or item.NETDEV.KIND is defined
+        or item.NETdev.kind is defined or item.NETdev.Kind is defined or item.NETdev.KIND is defined
+        or item.netDEV.kind is defined or item.netDEV.Kind is defined or item.netDEV.KIND is defined
+  notify:
+    - Restart systemd-networkd
+  tags:
+    - config-systemd
+    - systemd-networkd
+    - create file
+
+# .link files: When a network device appears, udev will look for the first 
+# matching
+- name: config-systemd | Create systemd-networkd network link(s)
+  template:
+    src: 'etc/systemd/network/systemd-link.j2'
+    dest: '/etc/systemd/network/{{ (item.interface) ~ ".link" }}'
+    owner: 'root'
+    group: 'root'
+    mode: u=rw,g=r,o=r
+  with_items: '{{ systemd_networks }}'
+  when: 
+    - systemd_networks is defined
+    - systemd_networks is iterable
+    - systemd_networks is not string
+    - item.interface is defined
+    - item.interface is not none
+    - item.udev is defined
+    - item.udev is true
+  notify:
+    - Restart systemd-networkd
+  tags:
+    - config-systemd
+    - systemd-networkd
+    - create file
+
+# .network files: They have the following sections: [Match], [Link], [Network],
+# [Address], [Route], [DHCPv4] and [DHCPv6].
+- name: config-systemd | Create systemd-networkd network network(s)
+  template:
+    src: 'etc/systemd/network/systemd-network.j2'
+    dest: '/etc/systemd/network/{{ (item.interface) ~ ".network" }}'
+    owner: 'root'
+    group: 'root'
+    mode: u=rw,g=r,o=r
+  with_items: '{{ systemd_networks }}'
+  when: 
+    - systemd_networks is defined
+    - systemd_networks is iterable
+    - systemd_networks is not string
+    - item.interface is defined
+    - item.interface is not none
+  notify:
+    - Restart systemd-networkd
+  tags:
+    - config-systemd
+    - systemd-networkd
+    - create file
+
+# Make a symlink for resolv.conf to use systemd-resolved
+- name: config-systemd | Make a symlink for resolv.conf to use systemd-resolved
+  file:
+    dest: '/etc/resolv.conf'
+    src: '/run/systemd/resolve/resolv.conf'
+    state: link
+    force: yes
+  when:
+    - defaults_systemd_resolved_available | bool
+  tags:
+    - systemd-resolved

@@ -1,0 +1,83 @@
+---
+############################
+#
+# File content of /etc/systemd/network/enp1s0.network 
+#
+# [Match]
+# Name=enp1s0
+# Architecture=x86-64
+# Driver=virtio_net
+# Host=myhost1
+# Virtualization: True
+# 
+# [Link]
+# ARP=True
+# MACAddress=52:54:00:00:ee:da
+# Multicast=True
+# MTUBytes=1500
+# 
+# [Address]
+# Address=192.168.1.16/24
+# 
+# [Network]
+# DHCP=False
+# Description=Management interface
+# 
+# [Route]
+# Gateway=192.168.1.1
+# GatewayOnLink=True
+# MTUBytes=1500
+# 
+############################
+
+- hosts: myhost1
+  remote_user: ansible
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_networks:
+      - interface: enp1s0
+        Address: 192.168.1.16/24
+        Architecture: x86-64
+        ARP: yes
+        DHCP: no
+        description: Management interface
+        Driver: virtio_net        
+        Gateway: 192.168.1.1
+        GatewayOnLink: yes
+        Host: myhost1         
+        MACAddress: 52:54:00:00:ee:da
+        Multicast: yes
+        MTUBytes: 1500
+        Virtualization: yes      
+      
+############################
+# Is equal like items below
+############################
+  vars:
+    systemd_networks:
+      - interface: enp1s0
+        Match:
+          Architecture: x86-64
+          Driver: virtio_net
+          Host: myhost1         
+          Virtualization: yes
+        Link:
+          ARP: no
+          MACAddress: 52:54:00:00:ee:da
+          Multicast: yes
+          MTUBytes: 1500
+        Network:
+          DHCP: false
+          description: Management interface  
+        Address:
+            - Address: 192.168.1.16/24
+        Route: 
+          - Gateway: 192.168.1.1
+            GatewayOnLink: yes
+            MTUBytes: 1500      

@@ -1,0 +1,299 @@
+---
+- hosts: myhost1
+  remote_user: deployer
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_networks:
+      - interface: enp5s0
+        Description: Management interface  
+        MACAddress: 15:44:47:d3:fa:91
+        MTUBytes: 1500
+        Match:
+          Architecture: x86-64
+          Driver: e1000e
+          Host: myhost1
+          Path: pci-0000:05:00.0
+          Type: ether
+          Virtualization: false
+        Link:
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: true
+        Network:
+          DHCP: false
+          DNS:
+            - 8.8.8.8
+            - 8.8.4.4
+          Domains:
+            - example.com
+          EmitLLDP: nearest-bridge
+          IPv6AcceptRA: false
+          LLDP: routers-only
+          NTP:
+            - 216.239.35.4
+            - 216.239.35.8
+            - 216.239.35.12
+        Address:
+          Address: 192.168.1.51
+        Route:
+          - Gateway: 192.168.1.1
+            GatewayOnLink: yes    
+
+      - interface: enp3s0f0
+        Match:
+          Architecture: x86-64
+          Driver: e1000e
+          Host: myhost1
+          Path: pci-0000:03:00.0
+          Type: ether
+          Virtualization: no
+        Link:
+          ARP: false
+          MACAddress: c6:be:d9:60:1a:7b
+          MTUBytes: 1500
+          Multicast: false
+        Network:
+          Bond: bond1
+          Description: 'Bonding interface #1 to Gi1/0/1'
+          DHCP: false
+          EmitLLDP: nearest-bridge
+          IPv6AcceptRA: false
+          LLDP: routers-only
+      
+      - interface: enp3s0f1
+        Match:
+          Architecture: x86-64
+          Driver: e1000e
+          Host: myhost1
+          Path: pci-0000:03:00.1
+          Type: ether
+          Virtualization: no
+        Link:
+          ARP: false
+          MACAddress: 71:09:7d:a8:eb:36
+          MTUBytes: 1500
+          Multicast: false
+        Bond: bond1
+        Description: 'Bonding interface #2 to Gi1/0/2'
+        DHCP: false
+        EmitLLDP: nearest-bridge
+        IPv6AcceptRA: false
+        LLDP: routers-only
+      
+      - interface: enp4s0f0
+        Match:
+          Architecture: x86-64
+          Driver: e1000e
+          Host: myhost1
+          Path: pci-0000:04:00.0
+          Type: ether
+          Virtualization: no
+        ARP: false
+        MACAddress: ff:98:14:29:51:a0
+        MTUBytes: 1500
+        Multicast: false
+        Bond: bond1 
+        Description: 'Bonding interface #3 to Gi1/0/3'
+        DHCP: false
+        EmitLLDP: nearest-bridge
+        IPv6AcceptRA: false
+        LLDP: routers-only
+      
+      - interface: enp4s0f1
+        Match:
+          Type: ether
+        Architecture: x86-64
+        Driver: e1000e
+        Host: myhost1
+        Path: pci-0000:04:00.1
+        Virtualization: no
+        ARP: false
+        MACAddress: fa:78:14:a0:5a:0a
+        MTUBytes: 1500
+        Multicast: false
+        Bond: bond1
+        Description: 'Bonding interface #4 to Gi1/0/4'
+        DHCP: false
+        EmitLLDP: nearest-bridge
+        IPv6AcceptRA: false
+        LLDP: routers-only
+      
+      - interface: bond1
+        Description: Bond interface
+        NetDev:
+          Kind: bond
+        Bond:
+          MinLinks: 2
+          MIIMonitorSec: 30
+          Mode: 802.3ad
+          LACPTransmitRate: fast
+          TransmitHashPolicy: layer2+3
+          UpDelaySec: 100
+          DownDelaySec: 100
+        Link:
+          ARP: false
+          MACAddress: 38:93:55:4d:06:0b
+          Multicast: false
+        Match:
+          Architecture: x86-64
+          Host: myhost1
+          Type: bond
+          Virtualization: no 
+        Network:
+          BindCarrier: enp3s0f0 enp3s0f1 enp4s0f0 enp4s0f1
+          DHCP: false
+          EmitLLDP: nearest-bridge
+          IPv6AcceptRA: false
+          LLDP: routers-only
+          VLAN:
+            - bond1.121
+            - bond1.130
+            - bond1.131
+            - bond1.140
+            - bond1.190
+      
+      - interface: bond1.121
+        Description: VLAN121 [VLAN]
+        MACAddress: 02:50:68:00:b1:21
+        NetDev:
+          Kind: vlan 
+        Link:
+          ARP: false
+          Multicast: false
+        VLAN:
+          GVRP: false
+          id: 121
+        Network:
+          DHCP: false
+          IPv6AcceptRA: false
+          MACVTAP: vtap121
+          Type: vlan
+        
+      - interface: bond1.130
+        Description: VLAN130 [VLAN]
+        MACAddress: 02:50:68:00:c1:30
+        NetDev:
+          Kind: vlan 
+        Link:
+          ARP: false
+          Multicast: false
+        VLAN:
+          GVRP: false
+          id: 130
+        Network:
+          DHCP: false
+          IPv6AcceptRA: false
+          MACVTAP: vtap130
+          Type: vlan
+
+      - interface: bond1.131
+        Description: VLAN130 [VLAN]
+        MACAddress: 02:50:68:00:c1:31
+        NetDev:
+          Kind: vlan 
+        Link:
+          ARP: false
+          Multicast: false
+        GVRP: false
+        id: 131
+        MACVTAP: vtap131
+        DHCP: false
+        IPv6AcceptRA: false
+        Type: vlan
+
+      - interface: bond1.140
+        Description: VLAN140 [VLAN]
+        MACAddress: 02:50:68:00:d1:40
+        NetDev:
+          Kind: vlan 
+        ARP: false
+        Multicast: false
+        GVRP: false
+        id: 140
+        DHCP: false
+        IPv6AcceptRA: false
+        MACVTAP: vtap140
+        Type: vlan
+ 
+      - interface: bond1.190
+        Description: VLAN190 [VLAN]
+        MACAddress: 02:50:68:00:a1:90
+        Kind: vlan 
+        ARP: false
+        Multicast: false
+        GVRP: false
+        id: 190
+        DHCP: false
+        IPv6AcceptRA: false
+        MACVTAP: vtap190
+        Type: vlan
+
+      - interface: vtap121
+        Description: VLAN121 - [MACVTAP]
+        MACAddress: f2:7b:4e:65:4b:2f
+        NetDev:
+          Kind: macvtap 
+        Link:
+          ARP: false
+          Multicast: false
+        MACVTAP:
+          Mode: bridge
+        Network:
+          dhcp: false
+          IPv6AcceptRA: false
+        
+      - interface: vtap130
+        Description: VLAN130 - [MACVTAP]
+        MACAddress: e6:14:61:02:4b:f9
+        NetDev:
+          Kind: macvtap
+        Link:
+          ARP: false
+          Multicast: false
+        MACVTAP:
+          Mode: bridge
+        Network:
+          dhcp: false
+          IPv6AcceptRA: false
+        
+      - interface: vtap131
+        Description: VLAN131 - [MACVTAP]
+        MACAddress: 9a:dc:1b:5d:60:33
+        NetDev:
+          Kind: macvtap 
+        Link:
+          ARP: false
+          Multicast: false
+        MACVTAP:
+          Mode: bridge
+        dhcp: false
+        IPv6AcceptRA: false
+
+      - interface: vtap140
+        Description: VLAN140 - [MACVTAP]
+        MACAddress: 22:68:fc:82:cc:1c
+        NetDev:
+          Kind: macvtap 
+        ARP: false
+        Multicast: false
+        MACVTAP:
+          Mode: bridge
+        dhcp: false
+        IPv6AcceptRA: false
+      
+      - interface: vtap190
+        Description: VLAN190 - [MACVTAP]
+        MACAddress: 06:10:37:6f:c6:81
+        Kind: macvtap 
+        ARP: false
+        Multicast: false
+        MACVTAP:
+          Mode: bridge
+        dhcp: false
+        IPv6AcceptRA: false
