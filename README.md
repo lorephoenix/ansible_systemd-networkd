@@ -282,7 +282,7 @@ This is an example playbook:
 License
 -------
 
-MIT
+GPLv3
 
 Author Information
 ------------------
