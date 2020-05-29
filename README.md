@@ -175,7 +175,7 @@ Role Variables
     server does not properly support DNSSEC all validations will fail. If set
     to "allow-downgrade" DNSSEC validation is attempted, but if the server 
     does not support DNSSEC properly, DNSSEC mode is automatically disabled.
-    <br /<br />
+    <p>
     Note that this mode makes DNSSEC validation vulnerable to "downgrade" 
     attacks, where an attacker might be able to trigger a downgrade to 
     non-DNSSEC mode by synthesizing a DNS response that suggests DNSSEC was 
