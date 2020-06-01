@@ -36,6 +36,12 @@ Role Variables
         defaults_systemd_resolved_available: "{{ systemd_resolved_enabled }}"
 
 
+    To store permanently changes related to interface IP forwarding.
+
+        defaults_ipforward: <filename>
+
+
+
 #### OS supported variables for the role
 
 1. vars/(OS supported distribution).yml
