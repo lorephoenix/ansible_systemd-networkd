@@ -1,4 +1,27 @@
 ---
+#  ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗            
+#  ██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║            
+#  ██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║█████╗      
+#  ██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║╚════╝      
+#  ██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗       
+#  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝       
+#                                                              
+#  ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗██████╗ 
+#  ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║██╔══██╗
+#  ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║██║  ██║
+#  ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║██║  ██║
+#  ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║██████╔╝
+#  ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═════╝ 
+#
+
+# -----------------------------------------------------------------------------
+# package - Generic OS package manager.
+# Installs packages using the underlying OS package manager. It is registering 
+# the result of the task. The until value applies the conditional. In this case
+# it keeps running the task until the 'install_packages' is a success.
+# The delay is how much time to wait between retries.
+# -----------------------------------------------------------------------------
+#
 - name: install-systemd | Ensure that the systemd packages are installed on host
   package:
     name: '{{ item }}'
@@ -14,6 +37,12 @@
     - install-systemd
     - systemd-networkd
 
+# -----------------------------------------------------------------------------
+# file - Manage files and file properties.
+# Create a directory if it does not exist and change file/directory ownership,
+# group and permissions (equivalent to 0755).
+# -----------------------------------------------------------------------------
+#
 - name: install-systemd | Create systemd-networkd directory
   file:
     path: '/etc/systemd/network'
@@ -24,9 +53,17 @@
   tags: 
     - install-systemd
     - systemd-networkd
-    - create group
+    - create directory
 
-- name: install-systemd | Find prefixed netdev and network files
+# -----------------------------------------------------------------------------
+# find - Return a list of files based on specific criteria.
+# The pattern restrict the list of files to be returned. Multiple patterns can
+# be specified and below find files ending with .netdev, .link and .network only
+# when the defaults variable with the name 'defaults_systemd_interface_cleanup'
+# has the boolean value 'True'.
+# -----------------------------------------------------------------------------
+#
+- name: install-systemd | Find prefixed link, netdev and network files
   find:
     paths: '/etc/systemd/network'
     patterns: '*.netdev,*.network,*.link'
@@ -36,8 +73,15 @@
   tags: 
     - install-systemd
     - systemd-networkd
-    - search files
+    - find files
 
+# -----------------------------------------------------------------------------
+# file - Manage files and file properties.
+# Files or symlinks will be unlinked that are listed under the variable 
+# 'networkd_files' if the defaults variable 'defaults_systemd_interface_cleanup'
+# has the boolean value 'True'.
+# -----------------------------------------------------------------------------
+#
 - name: install-systemd | Remove prefixed network files
   file:
     path: '{{ item.path }}'

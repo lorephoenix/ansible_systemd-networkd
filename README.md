@@ -46,6 +46,12 @@ Role Variables
         os_supported: <boolean>
 
 
+    List of sysctl directories
+
+        sysctl_dirs:
+          - /etc/sysctl.d
+
+
     Software package required to be installed
     
         systemd_networkd_base_pkgs: 

@@ -1,5 +1,25 @@
 ---
-# Enable service systemd-networkd
+#  ███████╗███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗         
+#  ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝         
+#  ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗█████╗     
+#  ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝╚════╝     
+#  ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗         
+#  ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝         
+#                                                              
+#  ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗██████╗ 
+#  ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║██╔══██╗
+#  ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║██║  ██║
+#  ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║██║  ██║
+#  ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║██████╔╝
+#  ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═════╝ 
+#
+
+# -----------------------------------------------------------------------------
+# systemd - Manage services
+# Enable the service and make sure the service is running when the defaults 
+# variable 'defaults_systemd_run_networkd' is set with the boolean value 'True'.
+# -----------------------------------------------------------------------------
+#
 - name: service-systemd | Enable and start systemd-networkd, if not running
   systemd:
     name: 'systemd-networkd'
@@ -10,9 +30,17 @@
   when:
     - defaults_systemd_run_networkd | bool
   tags:
+    - service-systemd
     - systemd-networkd
+    - manage
 
-# Enable service systemd-resolved
+# -----------------------------------------------------------------------------
+# systemd - Manage services
+# Enable the service and make sure the service is running when the defaults 
+# variable 'defaults_systemd_resolved_available' is set with the boolean value
+# 'True'.
+# -----------------------------------------------------------------------------
+#
 - name: service-systemd | Enable and start systemd-resolved, if not running
   systemd:
     name: 'systemd-resolved'
@@ -23,9 +51,22 @@
   when:
     - defaults_systemd_resolved_available | bool
   tags:
-    - systemd-resolved
+    - service-systemd
+    - systemd-networkd
+    - manage
 
+# -----------------------------------------------------------------------------
+# meta - Execute Ansible ‘actions’
+# 'flush_handlers' makes Ansible run any handler tasks which have thus far been
+#  notified. Ansible inserts these tasks internally at certain points to 
+# implicitly trigger handler runs (after pre/post tasks, the final role 
+# execution, and the main tasks section of your plays).
+# -----------------------------------------------------------------------------
+#
 - name: service-systemd | Restart systemd_networkd prior to applying sysctl changes
   meta: flush_handlers
-
+  tags:
+    - service-systemd
+    - systemd-networkd
+    - execute
 

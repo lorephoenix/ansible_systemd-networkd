@@ -1,4 +1,40 @@
 ---
+#   ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗               
+#  ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝               
+#  ██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗█████╗        
+#  ██║     ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║╚════╝        
+#  ╚██████╗╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝              
+#   ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝               
+#                                                              
+#  ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗██████╗ 
+#  ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║██╔══██╗
+#  ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║██║  ██║
+#  ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║██║  ██║
+#  ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║██████╔╝
+#  ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═════╝ 
+#
+                                                             
+# -----------------------------------------------------------------------------
+# template - Template a file out to a remote server
+# Template a file to '/etc/systemd/resolved.conf', using symbolic modes 
+# (equivalent to 0644). The variable 'systemd_resolved' can be defined in a
+# playbook.
+#
+# Example:
+# - hosts: myhost
+#   remote_user: deployer
+#   become: True
+#   become_method: sudo
+#   become_user: root
+#   gather_facts: True
+#   roles:
+#     - role: systemd-networkd
+#   vars:
+#     system_resolved:
+#       DNS: '10.31.196.1'
+#       FallbackDNS: '1.1.1.1 1.0.0.1'
+# -----------------------------------------------------------------------------
+#
 - name: config-systemd | Create systemd-resolved config
   template:
     src: 'etc/systemd/resolved.conf.j2'
@@ -15,8 +51,52 @@
     - systemd-resolved
     - create file
 
-# .netdev files: they will create a virtual network device for a matching
-#  environment
+# -----------------------------------------------------------------------------
+# file - Manage files and file properties.
+# Force to create a link if it does not exist when the defaults variable 
+# 'defaults_systemd_resolved_available' is set with the boolean value 'True'.
+# -----------------------------------------------------------------------------
+# Make a symlink for resolv.conf to use systemd-resolved
+- name: config-systemd | Make a symlink for resolv.conf to use systemd-resolved
+  file:
+    dest: '/etc/resolv.conf'
+    src: '/run/systemd/resolve/resolv.conf'
+    state: link
+    force: yes
+  when:
+    - defaults_systemd_resolved_available | bool
+  tags:
+    - systemd-resolved
+
+# -----------------------------------------------------------------------------
+# .netdev files: this will create a virtual network device for a matching
+#  environment.
+#
+# Template a file, using symbolic modes (equivalent to 0644). The variable 
+# 'systemd_networks' can be defined in a playbook.
+#
+# Example:
+# - hosts: myhost
+#   remote_user: deployer
+#   become: True
+#   become_method: sudo
+#   become_user: root
+#   gather_facts: True
+#   roles:
+#     - role: systemd-networkd
+#   vars:
+#     systemd_networks:
+#       - interface: bond1
+#         NetDev:
+#           Kind: bond
+#         Bond:
+#           DownDelaySec: 200
+#           LACPTransmitRate: fast
+#           Mode: 802.3ad
+#           TransmitHashPolicy: layer2+3
+#           UpDelaySec: 200
+# -----------------------------------------------------------------------------
+#
 - name: config-systemd | Create systemd-networkd network netdev(s)
   template:
     src: 'etc/systemd/network/systemd-netdev.j2'
@@ -24,19 +104,14 @@
     owner: 'root'
     group: 'root'
     mode: u=rw,g=r,o=r
-  with_items: '{{ systemd_networks }}'
+  with_items: '{{ systemd_networks|lower }}'
   when: 
     - systemd_networks is defined
     - systemd_networks is iterable
     - systemd_networks is not string
     - item.interface is defined
     - item.interface is not none
-    - item.Kind is defined or item.kind is defined or item.KIND is defined
-        or item.NetDev.kind is defined or item.NetDev.Kind is defined or item.NetDev.KIND is defined
-        or item.Netdev.kind is defined or item.Netdev.Kind is defined or item.Netdev.KIND is defined
-        or item.NETDEV.kind is defined or item.NETDEV.Kind is defined or item.NETDEV.KIND is defined
-        or item.NETdev.kind is defined or item.NETdev.Kind is defined or item.NETdev.KIND is defined
-        or item.netDEV.kind is defined or item.netDEV.Kind is defined or item.netDEV.KIND is defined
+    - item.kind is defined or item.netdev.kind is defined 
   notify:
     - Restart systemd-networkd
   tags:
@@ -44,8 +119,30 @@
     - systemd-networkd
     - create file
 
+# -----------------------------------------------------------------------------
 # .link files: When a network device appears, udev will look for the first 
-# matching
+# matching.
+#
+# Template a file, using symbolic modes (equivalent to 0644). The variable
+# 'systemd_networks' can be defined in a playbook.
+#
+# Example:
+# - hosts: myhost
+#   remote_user: deployer
+#   become: True
+#   become_method: sudo
+#   become_user: root
+#   gather_facts: True
+#   roles:
+#     - role: systemd-networkd
+#   vars:
+#     systemd_networks:
+#       - interface: eth0
+#         udev: yes
+#         Link:
+#           MTUBytes: 1500
+# -----------------------------------------------------------------------------
+# 
 - name: config-systemd | Create systemd-networkd network link(s)
   template:
     src: 'etc/systemd/network/systemd-link.j2'
@@ -69,8 +166,33 @@
     - systemd-networkd
     - create file
 
-# .network files: They have the following sections: [Match], [Link], [Network],
-# [Address], [Route], [DHCPv4] and [DHCPv6].
+# -----------------------------------------------------------------------------
+# .network files: containing the following sections: 
+# [Match], [Link], [Network], [Address], [Route], [DHCPv4] and [DHCPv6].
+#
+# Template a file, using symbolic modes (equivalent to 0644). The variable 
+# 'systemd_networks' can be defined in a playbook.
+#
+# Example:
+# - hosts: myhost
+#   remote_user: deployer
+#   become: True
+#   become_method: sudo
+#   become_user: root
+#   gather_facts: True
+#   roles:
+#     - role: systemd-networkd
+#   vars:
+#     systemd_networks:
+#       - interface: eth0
+#       Match:
+#         Architecture: x86-64
+#       Network:
+#         DHCP: no
+#       Address: 192.168.1.51/24
+#       Gateway: 192.168.1.1
+# -----------------------------------------------------------------------------
+#
 - name: config-systemd | Create systemd-networkd network network(s)
   template:
     src: 'etc/systemd/network/systemd-network.j2'
@@ -91,15 +213,3 @@
     - config-systemd
     - systemd-networkd
     - create file
-
-# Make a symlink for resolv.conf to use systemd-resolved
-- name: config-systemd | Make a symlink for resolv.conf to use systemd-resolved
-  file:
-    dest: '/etc/resolv.conf'
-    src: '/run/systemd/resolve/resolv.conf'
-    state: link
-    force: yes
-  when:
-    - defaults_systemd_resolved_available | bool
-  tags:
-    - systemd-resolved

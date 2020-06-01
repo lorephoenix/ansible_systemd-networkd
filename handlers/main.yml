@@ -1,4 +1,19 @@
 ---
+#  ██╗  ██╗ █████╗ ███╗   ██╗██████╗ ██╗     ███████╗██████╗ ███████╗
+#  ██║  ██║██╔══██╗████╗  ██║██╔══██╗██║     ██╔════╝██╔══██╗██╔════╝
+#  ███████║███████║██╔██╗ ██║██║  ██║██║     █████╗  ██████╔╝███████╗
+#  ██╔══██║██╔══██║██║╚██╗██║██║  ██║██║     ██╔══╝  ██╔══██╗╚════██║
+#  ██║  ██║██║  ██║██║ ╚████║██████╔╝███████╗███████╗██║  ██║███████║
+#  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝
+#
+
+# -----------------------------------------------------------------------------
+# systemd - Manage services
+# Enable the service and restart service 'systemd-networkd' on machine when the
+# defaults variable 'defaults_systemd_run_networkd' is set with the boolean
+# value 'True'.
+# -----------------------------------------------------------------------------
+#
 - name: Restart systemd-networkd
   systemd:
     name: 'systemd-networkd'
@@ -13,11 +28,18 @@
     - handlers
     - systemd-networkd
 
+# -----------------------------------------------------------------------------
+# systemd - Manage services
+# Enable the service and restart service 'systemd-resolved' on machine when the
+# defaults variable 'defaults_systemd_resolved_available ' is set with the 
+# boolean value 'True'.
+# -----------------------------------------------------------------------------
+#
 - name: Restart systemd-resolved
   systemd:
-    name: "systemd-resolved"
+    name: 'systemd-resolved'
     state: restarted
-    enabled: "yes"
+    enabled: True
   when:
     - defaults_systemd_resolved_available | bool
   tags: 

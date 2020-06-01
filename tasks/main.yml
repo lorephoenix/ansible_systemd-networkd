@@ -1,4 +1,22 @@
 ---
+#  ████████╗ █████╗ ███████╗██╗  ██╗
+#  ╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+#     ██║   ███████║███████╗█████╔╝ 
+#     ██║   ██╔══██║╚════██║██╔═██╗ 
+#     ██║   ██║  ██║███████║██║  ██╗
+#     ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+#
+
+# -----------------------------------------------------------------------------
+# When working with multiple OSes, inevitably there will be packages, 
+# configuration files and service calls that are vastly different than one
+# another. There can even be instances in which sub-versions of OSes can have 
+# major differences.
+# 
+# This method pulls in variables based on the client's OS and uses those 
+# variables to that machine's needs.
+# -----------------------------------------------------------------------------
+#
 - name: Load OS dependent variables
   include_vars: '{{ item_os }}'
   with_first_found:
@@ -19,6 +37,9 @@
 
 # Load 'config-systemd.yml' task file
 - include: 'config-systemd.yml'
+
+# Load 'sysctl-systemd.yml' task file
+- include: 'sysctl-systemd.yml'
 
 # Load 'service-systemd.yml' task file
 - include: 'service-systemd.yml'

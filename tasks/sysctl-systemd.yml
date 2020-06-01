@@ -1,0 +1,90 @@
+---
+#  ███████╗██╗   ██╗███████╗ ██████╗████████╗██╗                
+#  ██╔════╝╚██╗ ██╔╝██╔════╝██╔════╝╚══██╔══╝██║                
+#  ███████╗ ╚████╔╝ ███████╗██║        ██║   ██║█████╗          
+#  ╚════██║  ╚██╔╝  ╚════██║██║        ██║   ██║╚════╝          
+#  ███████║   ██║   ███████║╚██████╗   ██║   ███████╗           
+#  ╚══════╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝   ╚══════╝           
+#                                                              
+#  ███████╗██╗   ██╗███████╗████████╗███████╗███╗   ███╗██████╗ 
+#  ██╔════╝╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔════╝████╗ ████║██╔══██╗
+#  ███████╗ ╚████╔╝ ███████╗   ██║   █████╗  ██╔████╔██║██║  ██║
+#  ╚════██║  ╚██╔╝  ╚════██║   ██║   ██╔══╝  ██║╚██╔╝██║██║  ██║
+#  ███████║   ██║   ███████║   ██║   ███████╗██║ ╚═╝ ██║██████╔╝
+#  ╚══════╝   ╚═╝   ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═════╝ 
+# 
+
+# -----------------------------------------------------------------------------
+# find - Return a list of files based on specific criteria.
+# contains  : a regular expression or pattern which should be matched agains
+#             the file content.
+# file_type : type of file selected.
+# paths     : list of paths of directories to search.
+# patterns  : the first character matches one or more digits followed with the
+#             character hyphen '-' or the character underscore '_'. 
+#             The filename ends with the string '.conf'.
+# use_regex : the pattern is a Python regexes
+# -----------------------------------------------------------------------------
+#
+- name: sysctl-systemd | Find 'net.ipv4.conf.*.forwarding' line
+  find:
+    paths: '{{ (sysctl_dirs is defined and sysctl_dirs is not none) 
+              | bool
+              | default(false)
+              | ternary( sysctl_dirs, "/etc/sysctl.d") }}'
+    file_type: file
+    patterns: '^[0-9]+(_|-).*.conf$'
+    contains: '^net.ipv4.conf.*.forwarding='
+    use_regex: True
+  register: find_sysctl_files
+  tags:
+    - sysctl-systemd
+    - systemd-networkd
+    - find files
+    
+# -----------------------------------------------------------------------------
+# sysctl - Manage entries in ...
+# Set ip forwarding for that specific interface on/off in /proc and in a sysctl
+# file, verify token value and reload if necessary.
+# If the configuration line for IPv4 forwarding can be found into a specific 
+# sysctl configuration file then it will update the parameter on the same sysctl 
+# configuration file.
+# -----------------------------------------------------------------------------
+#
+- name: sysctl-systemd | Disable/Enable IP Forward for interface
+  sysctl:
+    name: "net.ipv4.conf.{{ item[1].interface }}.forwarding"
+    value: '{{ ( 
+                  (item[1].ipforward | default(false) | bool) 
+                  or 
+                  (item[1].network.ipforward | default(false) | bool)
+                )
+                | bool | ternary("1", "0") 
+            }}'
+    sysctl_file: '{{ 
+      (item[0].files.path is defined and item[0].files.path is not none) 
+      | bool 
+      | ternary( 
+        item[0].files.path,
+        (
+          (defaults_ipforward is defined and defaults_ipforward is not none)
+          | bool
+          | default(false)
+          | ternary(
+            "/etc/sysctl.d/" ~ defaults_ipforward,
+            "/etc/sysctl.conf" )
+        )
+      ) }}'
+    sysctl_set: yes
+    state: present
+    reload: yes
+  with_nested:
+    - '{{ find_sysctl_files }}'
+    - '{{ systemd_networks|lower }}'
+  when: 
+    - item[1].kind is not defined 
+    - item[1].netdev.kind is not defined 
+  tags:
+    - sysctl-systemd
+    - systemd-networkd
+    - IP Forwarding
