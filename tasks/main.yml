@@ -43,3 +43,9 @@
 
 # Load 'service-systemd.yml' task file
 - include: 'service-systemd.yml'
+
+# Load 'symlinks-systemd.yml' task file
+- include: 'symlinks-systemd.yml'
+
+# Load 'cleanup.yml' task file
+- include: 'cleanup.yml'

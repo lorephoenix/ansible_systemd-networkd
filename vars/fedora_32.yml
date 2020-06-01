@@ -1,0 +1,15 @@
+---
+
+os_supported: True
+sysctl_dirs:
+  - /etc/sysctl.d 
+  - /usr/lib/sysctl.d
+systemd_networkd_base_pkgs:
+  - systemd
+  - systemd-libs
+  - systemd-pam
+  - systemd-rpm-macros
+  - systemd-udev
+systemd_resolved_enabled: True
+
+

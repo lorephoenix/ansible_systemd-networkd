@@ -1,0 +1,37 @@
+---
+#   ██████╗██╗     ███████╗ █████╗ ███╗   ██╗██╗   ██╗██████╗ 
+#  ██╔════╝██║     ██╔════╝██╔══██╗████╗  ██║██║   ██║██╔══██╗
+#  ██║     ██║     █████╗  ███████║██╔██╗ ██║██║   ██║██████╔╝
+#  ██║     ██║     ██╔══╝  ██╔══██║██║╚██╗██║██║   ██║██╔═══╝ 
+#  ╚██████╗███████╗███████╗██║  ██║██║ ╚████║╚██████╔╝██║     
+#   ╚═════╝╚══════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝
+#
+
+# -----------------------------------------------------------------------------
+# service_facts – Return service state information as fact data
+# -----------------------------------------------------------------------------
+# 
+- name: cleanup | Populate service facts
+  service_facts:
+
+# -----------------------------------------------------------------------------
+# service - Manage services
+# Controls services on remote hosts.
+# If the service 'systemd-neworkd' is running and alternative service exist 
+# then to stop the service and to disable the service start on boot.
+# -----------------------------------------------------------------------------
+# 
+- name: cleanup | Disable old network scripts and NetworkManager
+  service:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  when: 
+    - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
+    - ansible_facts.services[item ~ ".service"] is defined
+  with_items:
+    - network
+    - NetworkManager
+  tags:
+    - cleanup
+    - systemd-networkd

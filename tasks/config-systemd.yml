@@ -52,23 +52,6 @@
     - create file
 
 # -----------------------------------------------------------------------------
-# file - Manage files and file properties.
-# Force to create a link if it does not exist when the defaults variable 
-# 'defaults_systemd_resolved_available' is set with the boolean value 'True'.
-# -----------------------------------------------------------------------------
-# Make a symlink for resolv.conf to use systemd-resolved
-- name: config-systemd | Make a symlink for resolv.conf to use systemd-resolved
-  file:
-    dest: '/etc/resolv.conf'
-    src: '/run/systemd/resolve/resolv.conf'
-    state: link
-    force: yes
-  when:
-    - defaults_systemd_resolved_available | bool
-  tags:
-    - systemd-resolved
-
-# -----------------------------------------------------------------------------
 # .netdev files: this will create a virtual network device for a matching
 #  environment.
 #
