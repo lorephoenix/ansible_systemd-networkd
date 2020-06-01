@@ -16,19 +16,23 @@
 
 # -----------------------------------------------------------------------------
 # systemd - Manage services
-# Enable the service and make sure the service is running when the defaults 
-# variable 'defaults_systemd_run_networkd' is set with the boolean value 'True'.
+# Enable/disable the service and make sure the service is running or stopped
+# depending the defaults variable 'defaults_systemd_run_networkd' boolean value.
 # -----------------------------------------------------------------------------
 #
 - name: service-systemd | Enable and start systemd-networkd, if not running
   systemd:
     name: 'systemd-networkd'
-    enabled: True
-    state: started
+    enabled: '{{ defaults_systemd_run_networkd 
+              | bool
+              | default(false)
+              | ternary( True, False ) }}'
+    state: '{{ defaults_systemd_run_networkd 
+              | bool 
+              | default(false) 
+              | ternary( "started", "stopped" ) }}'
   async: 45
   poll: 0
-  when:
-    - defaults_systemd_run_networkd | bool
   tags:
     - service-systemd
     - systemd-networkd
@@ -36,20 +40,23 @@
 
 # -----------------------------------------------------------------------------
 # systemd - Manage services
-# Enable the service and make sure the service is running when the defaults 
-# variable 'defaults_systemd_resolved_available' is set with the boolean value
-# 'True'.
+# Enable/disable the service and make sure the service is running or stopped
+# depending the variable 'defaults_systemd_resolved_available' boolean value.
 # -----------------------------------------------------------------------------
 #
 - name: service-systemd | Enable and start systemd-resolved, if not running
   systemd:
     name: 'systemd-resolved'
-    enabled: True
-    state: started
+    enabled: '{{ defaults_systemd_resolved_available 
+              | bool
+              | default(false)
+              | ternary( True, False ) }}'
+    state: '{{ defaults_systemd_resolved_available 
+              | bool 
+              | default(false) 
+              | ternary( "started", "stopped" ) }}'
   async: 45
   poll: 0
-  when:
-    - defaults_systemd_resolved_available | bool
   tags:
     - service-systemd
     - systemd-networkd
