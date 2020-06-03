@@ -1,0 +1,9 @@
+---
+# Ansible Requirements File
+# https://docs.ansible.com/ansible/galaxy.html#advanced-control-over-role-requirements-files
+#
+# Install via: ansible-galaxy install -r requirements.yml
+
+- src: https://github.com/lorephoenix/ansible_systemd-networkd
+  version: master
+  name: systemd-networkd

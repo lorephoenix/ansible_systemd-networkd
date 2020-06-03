@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  remote_user: root
+  roles:
+    - systemd-networkd
+
+  vars:
+    systemd_resolved:
+
+    systemd_networks:

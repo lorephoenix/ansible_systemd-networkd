@@ -1,0 +1,15 @@
+FROM centos:7
+
+# Install Ansible
+RUN dnf -y install epel-release
+RUN dnf -y install git ansible sudo
+RUN dnf clean all
+
+# Install Ansible inventory file
+COPY tests/inventory /etc/ansible/hosts
+COPY tests/test.yml /etc/ansible/test.yml
+COPY tests/requirements.yml /etc/ansible/requirements.yml
+RUN ansible-galaxy install -f -r /etc/ansible/requirements.yml
+RUN cat /etc/ansible/ansible.cfg
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
