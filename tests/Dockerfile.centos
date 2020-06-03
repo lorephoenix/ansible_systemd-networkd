@@ -24,5 +24,6 @@ RUN /usr/bin/ls -al /etc/systemd
 RUN dnf list installed | grep systemd
 RUN whereis systemctl
 RUN whereis service
+RUN /usr/bin/systemctl status NetworkManager
 
 
