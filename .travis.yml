@@ -1,29 +1,40 @@
 ---
 language: python
-python: "2.7"
+python: 
+  - "2.7"
 
-# Use the new container infrastructure
-sudo: false
+sudo: required
+env:
+  - CONTAINER_ID=$(mktemp)
 
-# Install ansible
-addons:
-  apt:
-    packages:
-    - python-pip
+services: 
+  - docker
 
-install:
-  # Install ansible
-  - pip install ansible
+  
+before_install:
+  # Pull containers
+  - sudo docker pull centos:7
 
-  # Check ansible version
-  - ansible --version
-
-  # Create ansible.cfg with correct roles_path
-  - printf '[defaults]\nroles_path=../' >ansible.cfg
+  # Customize containers
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
 
 script:
-  # Basic role syntax check
-  - ansible-playbook tests/test.yml -i tests/inventory --syntax-check
+  #
+  # Run test playbook on CentOS container
+  #
+
+  # Run container in detached state
+  - sudo docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro centos:ansible /usr/lib/systemd/systemd > "${CONTAINER_ID}"
+
+  # Check syntax of ansible playbook
+  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/kvm_host/tests/test.yml -i /etc/ansible/roles/kvm_host/tests/inventory --syntax-check
+
+  # Run the role/playbook with ansible-playbook
+  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/kvm_host/tests/test.yml -i /etc/ansible/roles/kvm_host/tests/inventory --connection=local --become
+
+  # Clean up
+  - sudo docker stop "$(cat ${CONTAINER_ID})"
 
 notifications:
+  email: false
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
