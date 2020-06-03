@@ -3,37 +3,23 @@ language: python
 python: 
   - "3.6"
 
-sudo: required
-env:
-  - CONTAINER_ID=$(mktemp)
+services: docker
 
-services: 
-  - docker
-
-  
 before_install:
-  # Pull containers
-  - sudo docker pull centos:8
-
-  # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
+  # Upgrade Docker.
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
 script:
-  #
-  # Run test playbook on CentOS container
-  #
+  # Test building Dockerfile.
+  - docker build -t docker-ansible .
 
-  # Run container in detached state
-  - sudo docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro centos:ansible /usr/lib/systemd/systemd > "${CONTAINER_ID}"
+  # Test running the container.
+  - docker run --name test-container -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro docker-ansible
 
-  # Check syntax of ansible playbook
-  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/systemd-networkd/tests/test.yml -i /etc/ansible/roles/systemd-networkd/tests/inventory --syntax-check
+  # Verify Ansible is available in the container.
+  - docker exec --tty test-container env TERM=xterm ansible --version
 
-  # Run the role/playbook with ansible-playbook
-  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/systemd-networkd/tests/test.yml -i /etc/ansible/roles/systemd-networkd/tests/inventory --connection=local --become
-
-  # Clean up
-  - sudo docker stop "$(cat ${CONTAINER_ID})"
 
 notifications:
   email: false
