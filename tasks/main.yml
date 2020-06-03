@@ -29,11 +29,9 @@
     loop_var: item_os
   tags: [ 'OS dependency']
 
-# Load 'redhat-install.yml' task file
-- include: 'redhat-install.yml'
-  when: 
-    - ansible_os_family|lower == 'redhat'
-
+# Load '{{ ansible_os_family }}-install.yml' task file
+- include: '{{ ansible_os_family | lower }}-install.yml'
+  
 # Load 'install-systemd.yml' task file
 - include: 'install-systemd.yml'
 
