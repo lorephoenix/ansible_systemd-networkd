@@ -8,12 +8,16 @@ galaxy_info:
   
   platforms:
     - name: Archlinux
+    - name: EL
+      versions:
+        - 7
+        - 8
     - name: Fedora
       versions:
         - 32
-
+    
   categories:
     - systemd
     - development
-  dependencies:
-    - plugins
+  dependencies: []
+    
