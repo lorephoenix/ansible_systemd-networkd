@@ -21,16 +21,18 @@
   include_vars: '{{ item_os }}'
   with_first_found:
     - files:
-      - '{{ ansible_distribution | lower}}_{{ ansible_distribution_version | lower}}.yml'
       - '{{ ansible_distribution | lower}}_{{ ansible_distribution_major_version | lower}}.yml'
       - '{{ ansible_distribution | lower}}.yml'
       - '{{ ansible_os_family | lower }}_{{ ansible_distribution_major_version | lower }}.yml'
-      - '{{ ansible_distribution | lower }}.yml'
-      - '{{ ansible_os_family | lower }}.yml'
       skip: false
   loop_control:
     loop_var: item_os
   tags: [ 'OS dependency']
+
+# Load 'redhat-install.yml' task file
+- include: 'redhat-install.yml'
+  when: 
+    - ansible_os_family|lower == 'redhat'
 
 # Load 'install-systemd.yml' task file
 - include: 'install-systemd.yml'
@@ -40,6 +42,9 @@
 
 # Load 'sysctl-systemd.yml' task file
 - include: 'sysctl-systemd.yml'
+  when: 
+    - systemd_networks is defined
+    - systemd_networks is not none
 
 # Load 'service-systemd.yml' task file
 - include: 'service-systemd.yml'
