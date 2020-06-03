@@ -29,26 +29,39 @@
     loop_var: item_os
   tags: [ 'OS dependency']
 
-# Load '{{ ansible_os_family }}-install.yml' task file
-- include: '{{ ansible_os_family | lower }}-install.yml'
+# -----------------------------------------------------------------------------
+# assert - Asserts given expressions are true
+# -----------------------------------------------------------------------------
+#
+- name: OS is supported
+  assert:
+    that: os_supported == True
+  tags: [ 'OS dependency']
+
+# -----------------------------------------------------------------------------
+# include - Include play or task list(s)
+# -----------------------------------------------------------------------------
+#
+# Load 'os_{{ ansible_os_family }}.yml' task file
+- include: 'os_{{ ansible_os_family | lower }}.yml'
   
-# Load 'install-systemd.yml' task file
-- include: 'install-systemd.yml'
+# Load 'systemd-install.yml' task file
+- include: 'systemd-install.yml'
 
-# Load 'config-systemd.yml' task file
-- include: 'config-systemd.yml'
+# Load 'systemd-config.yml' task file
+- include: 'systemd-config.yml'
 
-# Load 'sysctl-systemd.yml' task file
-- include: 'sysctl-systemd.yml'
+# Load 'systemd-sysctl.yml' task file
+- include: 'systemd-sysctl.yml'
   when: 
     - systemd_networks is defined
     - systemd_networks is not none
 
-# Load 'service-systemd.yml' task file
-- include: 'service-systemd.yml'
+# Load 'systemd-service.yml' task file
+- include: 'systemd-service.yml'
 
-# Load 'symlinks-systemd.yml' task file
-- include: 'symlinks-systemd.yml'
+# Load 'systemd-symlinks' task file
+- include: 'systemd-symlinks.yml'
 
 # Load 'cleanup.yml' task file
 - include: 'cleanup.yml'
