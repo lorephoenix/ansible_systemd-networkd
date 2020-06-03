@@ -1,9 +1,8 @@
 ---
 language: python
-python: 
-  - "3.6"
 
 sudo: required
+
 env:
   - CONTAINER_ID=$(mktemp)
 
@@ -15,12 +14,15 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
  
+  # Pull containers
+  - sudo docker pull centos:7
+
+  # Customize containers
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
+
 script:
 
- # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
-  
-
+ 
 notifications:
   email: false
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
