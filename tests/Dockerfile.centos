@@ -22,5 +22,7 @@ RUN ip a
 RUN /usr/bin/cat /etc/redhat-release
 RUN /usr/bin/ls -al /etc/systemd
 RUN dnf list installed | grep systemd
-RUN systemctl 
+RUN whereis systemctl
+RUN whereis service
+
 
