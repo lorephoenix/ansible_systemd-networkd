@@ -20,6 +20,6 @@ RUN dnf -y update
 
 RUN ip a
 RUN /usr/bin/cat /etc/redhat-release
-RUN /usr/bin/ls -al /etc
+RUN /usr/bin/ls -al /etc/systemd
 
 
