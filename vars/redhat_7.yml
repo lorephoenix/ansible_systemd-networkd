@@ -1,0 +1,20 @@
+---
+#  ██████╗ ███████╗██████╗ ██╗  ██╗ █████╗ ████████╗    ███████╗
+#  ██╔══██╗██╔════╝██╔══██╗██║  ██║██╔══██╗╚══██╔══╝    ╚════██║
+#  ██████╔╝█████╗  ██║  ██║███████║███████║   ██║           ██╔╝
+#  ██╔══██╗██╔══╝  ██║  ██║██╔══██║██╔══██║   ██║          ██╔╝ 
+#  ██║  ██║███████╗██████╔╝██║  ██║██║  ██║   ██║          ██║  
+#  ╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝          ╚═╝  
+#
+
+os_supported: True
+sysctl_dirs:
+  - /etc/sysctl.d 
+  - /usr/lib/sysctl.d
+systemd_networkd_base_pkgs:
+  - systemd
+  - systemd-libs
+  - systemd-sysv
+  - systemd-networkd
+  - systemd-resolved
+systemd_resolved_enabled: True
