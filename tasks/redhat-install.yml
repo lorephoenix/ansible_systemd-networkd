@@ -1,0 +1,44 @@
+---
+#   ██████╗ ███████╗██████╗ ██╗  ██╗ █████╗ ████████╗     
+#   ██╔══██╗██╔════╝██╔══██╗██║  ██║██╔══██╗╚══██╔══╝     
+#   ██████╔╝█████╗  ██║  ██║███████║███████║   ██║█████╗  
+#   ██╔══██╗██╔══╝  ██║  ██║██╔══██║██╔══██║   ██║╚════╝  
+#   ██║  ██║███████╗██████╔╝██║  ██║██║  ██║   ██║        
+#   ╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝        
+#                                                         
+#   ██╗███╗   ██╗███████╗████████╗ █████╗ ██╗     ██╗     
+#   ██║████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║     ██║     
+#   ██║██╔██╗ ██║███████╗   ██║   ███████║██║     ██║     
+#   ██║██║╚██╗██║╚════██║   ██║   ██╔══██║██║     ██║     
+#   ██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
+#   ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
+#
+
+# -----------------------------------------------------------------------------
+# When working with multiple OSes, inevitably there will be packages, 
+# configuration files and service calls that are vastly different than one
+# another. There can even be instances in which sub-versions of OSes can have 
+# major differences.
+# 
+# This method pulls in variables based on the client's OS and uses those 
+# variables to that machine's needs.
+# -----------------------------------------------------------------------------
+#
+- name: redhat-install | Upgrade all packages
+  package:
+    name: "*"
+    state: latest
+
+- name: redhat-install | Make sure dnf-plugings.core installed
+  dnf:
+    name: dnf-plugins-core
+    state: present
+  when:
+    - ansible_distribution_major_version|int >= 8
+
+- name: redhat-install | Install the EPEL rpm from a remote repo (version >= 8)
+  dnf:
+    name: 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version|int}}.noarch.rpm'
+    state: present
+  when: 
+    - ansible_distribution_major_version|int >= 8
