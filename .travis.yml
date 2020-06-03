@@ -1,7 +1,7 @@
 ---
 language: python
 python: 
-  - "2.7"
+  - "3.6"
 
 sudo: required
 env:
@@ -27,10 +27,10 @@ script:
   - sudo docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro centos:ansible /usr/lib/systemd/systemd > "${CONTAINER_ID}"
 
   # Check syntax of ansible playbook
-  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/kvm_host/tests/test.yml -i /etc/ansible/roles/kvm_host/tests/inventory --syntax-check
+  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/systemd-networkd/tests/test.yml -i /etc/ansible/roles/systemd-networkd/tests/inventory --syntax-check
 
   # Run the role/playbook with ansible-playbook
-  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/kvm_host/tests/test.yml -i /etc/ansible/roles/kvm_host/tests/inventory --connection=local --become
+  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/systemd-networkd/tests/test.yml -i /etc/ansible/roles/systemd-networkd/tests/inventory --connection=local --become
 
   # Clean up
   - sudo docker stop "$(cat ${CONTAINER_ID})"
