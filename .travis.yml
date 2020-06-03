@@ -13,7 +13,7 @@ services:
   
 before_install:
   # Pull containers
-  - sudo docker pull centos:7
+  - sudo docker pull centos:8
 
   # Customize containers
   - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
