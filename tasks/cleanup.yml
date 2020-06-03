@@ -18,14 +18,13 @@
 # service - Manage services
 # Controls services on remote hosts.
 # If the service 'systemd-neworkd' is running and alternative service exist 
-# then to stop the service and to disable the service start on boot.
+# then disable the service start on boot.
 # -----------------------------------------------------------------------------
 # 
 - name: cleanup | Disable old network scripts and NetworkManager
   service:
     name: "{{ item }}"
     enabled: no
-    state: stopped
   when: 
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
@@ -35,3 +34,40 @@
   tags:
     - cleanup
     - systemd-networkd
+
+# -----------------------------------------------------------------------------
+# service - Manage services
+# Controls services on remote hosts.
+# If the service 'systemd-neworkd' is running and alternative service exist 
+# then to stop the service.
+# -----------------------------------------------------------------------------
+# 
+- name: cleanup | Stop the service network and NetworkManager
+  service:
+    name: "{{ item }}"
+    state: stopped
+  when: 
+    - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
+    - ansible_facts.services[item ~ ".service"] is defined
+    - ansible_distribution_major_version|int != 7
+  with_items:
+    - network
+    - NetworkManager
+  tags:
+    - cleanup
+    - systemd-networkd
+
+# -----------------------------------------------------------------------------
+# reboot - Reboot a machine
+# Seconds to wait after the reboot command was successful before attempting to 
+# validate the system rebooted successfully.
+# -----------------------------------------------------------------------------
+# 
+-  name: cleanup | Reboot RedHat OS family version 7
+   reboot:
+    post_reboot_delay : 30
+    reboot_timeout: 120
+   when: 
+    - ansible_os_family|lower == 'redhat'
+    - ansible_distribution_major_version|int == 7
+
