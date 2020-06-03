@@ -30,6 +30,10 @@
               | default(false)
               | ternary( "link", "absent" ) }}'
     force: yes
+  when:
+    - systemd_resolved is defined
+    - systemd_resolved is not none
+    - systemd_resolved | length > 0
   tags:
     - symlinks-systemd
     - systemd-resolved
