@@ -1,5 +1,5 @@
 FROM centos:8
-LABEL maintainer="Christophe Vermeren"
+LABEL maintainer="Christophe Vermeren <lorephoenix@@users.noreply.github.com>"
 ENV container=docker
 
 ENV pip_packages "ansible"
@@ -20,7 +20,5 @@ RUN dnf -y update
 
 RUN ip a
 RUN /usr/bin/cat /etc/redhat-release
-RUN ls -al /etc/systemd/network
 
-VOLUME ["/sys/fs/cgroup"]
-CMD ["/usr/lib/systemd/systemd"]
+

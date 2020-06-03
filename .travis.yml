@@ -3,6 +3,7 @@ language: python
 python: 
   - "3.6"
 
+sudo: required
 env:
   - CONTAINER_ID=$(mktemp)
 
@@ -17,7 +18,7 @@ before_install:
 script:
 
  # Customize containers
-  - docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
   
 
 notifications:
