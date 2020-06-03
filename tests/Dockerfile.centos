@@ -18,5 +18,9 @@ rm -f /lib/systemd/system/anaconda.target.wants/*;
 # Install requirements.
 RUN dnf -y update
 
+RUN ip a
+RUN /usr/bin/cat /etc/redhat-release
+RUN ls -al /etc/systemd/network
+
 VOLUME ["/sys/fs/cgroup"]
 CMD ["/usr/lib/systemd/systemd"]
