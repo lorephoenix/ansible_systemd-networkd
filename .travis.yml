@@ -3,12 +3,20 @@ language: python
 python: 
   - "3.6"
 
-services: docker
+env:
+  - CONTAINER_ID=$(mktemp)
+
+services: 
+  - docker
 
 before_install:
   # Upgrade Docker.
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+ 
+ # Customize containers
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
+
 
 script:
   # Test building Dockerfile.
