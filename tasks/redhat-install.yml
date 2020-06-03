@@ -34,6 +34,7 @@
     name: dnf-plugins-core
     state: present
   when:
+    - ansible_distribution|lower  != 'fedora'
     - ansible_distribution_major_version|int >= 8
 
 - name: redhat-install | Install the EPEL rpm from a remote repo (version >= 8)
@@ -41,4 +42,5 @@
     name: 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version|int}}.noarch.rpm'
     state: present
   when: 
+    - ansible_distribution|lower  != 'fedora'
     - ansible_distribution_major_version|int >= 8
