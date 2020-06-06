@@ -1,8 +1,14 @@
+lanuage: python
+python:
+  - "3.6"
+  - "3.8"
+
 sudo: required
 env:
   matrix:
   - OS_TYPE=centos OS_VERSION=7
   - OS_TYPE=centos OS_VERSION=8
+  - OS_TYPE=fedora OS_VERSION=32
   
 services:
   - docker
@@ -12,4 +18,4 @@ before_install:
   - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
   - sudo service docker restart
   - sleep 5
-  - sudo docker pull centos:centos${OS_VERSION}
+  
