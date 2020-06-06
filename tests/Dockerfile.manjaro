@@ -1,0 +1,2 @@
+FROM manjarolinux/base
+ENV container=docker
