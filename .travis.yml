@@ -1,13 +1,11 @@
 lanuage: python
 python:
-  - "3.6"
   - "3.8"
 
 sudo: required
+
 env:
   matrix:
-  - OS_TYPE=centos OS_VERSION=7
-  - OS_TYPE=centos OS_VERSION=8
   - OS_TYPE=fedora OS_VERSION=32
   
 services:
