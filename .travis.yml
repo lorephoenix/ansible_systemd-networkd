@@ -16,4 +16,8 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
-  
+  # Pull containers
+  - sudo docker pull centos:7
+
+  # Customize containers
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos7 --tag=centos:ansible .
