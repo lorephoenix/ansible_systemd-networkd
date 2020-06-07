@@ -16,8 +16,8 @@ before_install:
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
   # Pull containers
-  - sudo docker pull manjarolinux/base
+  - sudo docker pull centos/systemd
 
   # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.manjaro --tag=manjaro:ansible .
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos7 --tag=centos7:ansible .
 
