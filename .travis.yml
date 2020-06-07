@@ -20,4 +20,4 @@ before_install:
   - sudo docker pull centos:7
 
   # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.centos7 --tag=centos:ansible .
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
