@@ -21,7 +21,3 @@ before_install:
   # Customize containers
   - sudo docker build --rm=true --file=tests/Dockerfile.manjaro --tag=manjaro:ansible .
 
-  script:
-
-  notifications:
-    
