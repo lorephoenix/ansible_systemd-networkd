@@ -14,10 +14,5 @@ before_install:
   # Upgrade Docker.
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-
-  # Pull containers
-  - sudo docker pull centos/systemd
-
-  # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.centos7 --tag=centos7:ansible .
-
+  - docker --version
+  
