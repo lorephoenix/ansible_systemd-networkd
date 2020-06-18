@@ -31,6 +31,7 @@
   with_items:
     - network
     - NetworkManager
+    - dhcpcd
   tags:
     - cleanup
     - systemd-networkd
@@ -53,6 +54,7 @@
   with_items:
     - network
     - NetworkManager
+    - dhcpcd
   tags:
     - cleanup
     - systemd-networkd

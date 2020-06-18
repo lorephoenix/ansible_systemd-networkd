@@ -15,6 +15,15 @@
 # 
 
 # -----------------------------------------------------------------------------
+# command - Execute commands on targets.
+# -----------------------------------------------------------------------------
+- name: sysctl-systemd | Get physical interfaces names
+  command: find /sys/class/net -type l -not -lname '*virtual*' -printf '%f\n'
+  register: physical_interfaces_cmd
+  changed_when: false
+  check_mode: false
+
+# -----------------------------------------------------------------------------
 # find - Return a list of files based on specific criteria.
 # contains  : a regular expression or pattern which should be matched agains
 #             the file content.
@@ -82,8 +91,7 @@
     - '{{ find_sysctl_files }}'
     - '{{ systemd_networks|lower }}'
   when: 
-    - item[1].kind is not defined 
-    - item[1].netdev.kind is not defined 
+    - item[1].interface in physical_interfaces_cmd.stdout_lines
   tags:
     - sysctl-systemd
     - systemd-networkd

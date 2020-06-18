@@ -14,7 +14,7 @@
 defaults_systemd_interface_cleanup: True
 
 # -----------------------------------------------------------------------------
-# Enable systemd-networkd and (re)start the service
+# Enable and (re)Start the systemd-networkd service
 # -----------------------------------------------------------------------------
 defaults_systemd_run_networkd: True
 

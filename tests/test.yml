@@ -3,8 +3,7 @@
   remote_user: root
   roles:
     - role: systemd-networkd
-
   vars:
-    systemd_resolved:
-
     systemd_networks:
+      - interface: eth0
+      

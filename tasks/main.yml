@@ -51,17 +51,17 @@
 # Load 'systemd-config.yml' task file
 - include: 'systemd-config.yml'
 
-# Load 'systemd-sysctl.yml' task file
-- include: 'systemd-sysctl.yml'
-  when: 
-    - systemd_networks is defined
-    - systemd_networks is not none
-
 # Load 'systemd-service.yml' task file
 - include: 'systemd-service.yml'
 
 # Load 'systemd-symlinks' task file
 - include: 'systemd-symlinks.yml'
+
+# Load 'systemd-sysctl.yml' task file
+- include: 'systemd-sysctl.yml'
+  when: 
+    - systemd_networks is defined
+    - systemd_networks is not none
 
 # Load 'cleanup.yml' task file
 - include: 'cleanup.yml'

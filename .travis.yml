@@ -1,7 +1,9 @@
 ---
-lanuage: python
-python:
-  - "3.8"
+lanuage: node_js
+node_js:
+  - 'tests/Dockerfile.centos'
+  - '6'
+  - '4'
 
 sudo: required
 

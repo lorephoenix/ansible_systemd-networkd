@@ -1,0 +1,258 @@
+---
+- hosts: dacent8
+  remote_user: vagrant
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_resolved:
+      DNS: '8.8.8.8 8.8.4.4'
+      FallbackDNS: '1.1.1.1 1.0.0.1'
+      Cache: yes
+      DNSOverTLS: no
+      DNSSEC: 'allow-downgrade'
+      DNSStubListener: yes
+      Domains: 'example.com'
+      LLMNR: no
+      MulticastDNS: no
+      ReadEtcHosts: no
+
+    systemd_networks:
+      - interface: eth0
+        Description: Management interface  
+        MACAddress: 52:54:00:85:39:59
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: true
+        Network:
+          DHCP: true
+      - interface: eth1
+        Description: Isolated network without NAT
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: true
+        Network:
+          DHCP: false
+          Domains:
+            - example.com
+            - example.net 
+        Address:
+          - Address: 192.168.47.9/28
+      - interface: vbr0
+        Description: BRIDGE - Isolated interface
+        NetDev:
+          Kind: bridge 
+        Link:
+          ARP: false
+          Multicast: false
+        Bridge:
+          AgeingTimeSec: 60
+          ForwardDelaySec: 0
+          HelloTimeSec: 0
+          MaxAgeSec: 0
+          STP: false
+        Network:
+          dhcp: false
+          IPv6AcceptRA: false
+
+- hosts: dacent7
+  remote_user: vagrant
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_resolved:
+      DNS: '8.8.8.8 8.8.4.4'
+      FallbackDNS: '1.1.1.1 1.0.0.1'
+      Cache: yes
+      DNSOverTLS: no
+      DNSSEC: 'allow-downgrade'
+      DNSStubListener: yes
+      Domains: 'example.com'
+      LLMNR: no
+      MulticastDNS: no
+      ReadEtcHosts: no
+
+    systemd_networks:
+      - interface: eth0
+        Description: Management interface  
+        MACAddress: 52:54:00:6b:5d:a0
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: true
+        Network:
+          DHCP: true
+      - interface: eth1
+        Description: Isolated network without NAT
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500
+        Network:
+          DHCP: false
+          Domains:
+            - example.com
+            - example.net 
+        Address:
+          - Address: 192.168.47.11/28
+      - interface: vbr0
+        Description: BRIDGE - Isolated interface
+        NetDev:
+          Kind: bridge
+        Network:
+          dhcp: false
+          IPv6AcceptRA: false
+      
+
+- hosts: dafedo32
+  remote_user: vagrant
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_resolved:
+      DNS: '8.8.8.8 8.8.4.4'
+      FallbackDNS: '1.1.1.1 1.0.0.1'
+      Cache: yes
+      DNSOverTLS: no
+      DNSSEC: 'allow-downgrade'
+      DNSStubListener: yes
+      Domains: 'example.com'
+      LLMNR: no
+      MulticastDNS: no
+      ReadEtcHosts: no
+
+    systemd_networks:
+      - interface: eth0
+        Description: Management interface  
+        MACAddress: 52:54:00:4a:b5:55
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500         
+        Network:
+          DHCP: true
+      - interface: eth1
+        Description: Isolated network without NAT
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: true
+        Network:
+          DHCP: false
+          Domains:
+            - example.com
+            - example.net 
+        Address:
+          - Address: 192.168.47.11/28
+      - interface: vbr0
+        Description: BRIDGE - Isolated interface
+        NetDev:
+          Kind: bridge 
+        Link:
+          ARP: false
+          Multicast: false
+        Bridge:
+          AgeingTimeSec: 60
+          ForwardDelaySec: 0
+          HelloTimeSec: 0
+          MaxAgeSec: 0
+          STP: false
+        Network:
+          dhcp: false
+          IPv6AcceptRA: false
+
+
+- hosts: damanj
+  remote_user: vagrant
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+  roles:
+    - role: systemd-networkd
+  
+  vars:
+    systemd_resolved:
+      DNS: '8.8.8.8 8.8.4.4'
+      FallbackDNS: '1.1.1.1 1.0.0.1'
+      Cache: yes
+      DNSOverTLS: no
+      DNSSEC: 'allow-downgrade'
+      DNSStubListener: yes
+      Domains: 'example.com'
+      LLMNR: no
+      MulticastDNS: no
+      ReadEtcHosts: no
+
+    systemd_networks:
+      - interface: eth0
+        Description: Management interface  
+        MACAddress: 52:54:00:4a:b5:01
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500         
+        Network:
+          DHCP: true
+      - interface: eth1
+        Description: Isolated network without NAT
+        Match:
+          Virtualization: True
+        Link:
+          MTUBytes: 1500
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: true
+        Network:
+          DHCP: false
+          Domains:
+            - example.com
+            - example.net 
+        Address:
+          - Address: 192.168.47.12/28
+      - interface: vbr0
+        Description: BRIDGE - Isolated interface
+        NetDev:
+          Kind: bridge 
+        Link:
+          ARP: false
+          Multicast: false
+        Bridge:
+          AgeingTimeSec: 60
+          ForwardDelaySec: 0
+          HelloTimeSec: 0
+          MaxAgeSec: 0
+          STP: false
+        Network:
+          dhcp: false
+          IPv6AcceptRA: false
+      
+      

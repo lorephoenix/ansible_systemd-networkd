@@ -1,0 +1,24 @@
+[linux:children]
+Archlinux
+Fedora
+RedHat7
+RedHat8
+
+[Archlinux]
+damanj ansible_ssh_host=damanj.
+
+[Fedora]
+dafedo32 ansible_ssh_host=dafedo32.
+
+[RedHat7]
+dacent7 ansible_ssh_host=dacent7.
+
+[RedHat8]
+dacent8 ansible_ssh_host=dacent8.
+
+[Archlinux:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+[Fedora:vars]
+ansible_python_interpreter=/usr/bin/python3
+
