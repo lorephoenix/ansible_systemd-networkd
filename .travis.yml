@@ -1,25 +1,40 @@
 ---
-lanuage: node_js
-node_js:
-  - 'tests/Dockerfile.centos'
-  - '6'
-  - '4'
+language: python
+python: 
+  - "2.7"
 
 sudo: required
-
 env:
   - CONTAINER_ID=$(mktemp)
-  
-services:
+
+services: 
   - docker
 
+  
 before_install:
-  # Upgrade Docker.
-  - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-
   # Pull containers
   - sudo docker pull centos:7
 
   # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.centos --tag=centos:ansible .
+  - sudo docker build --rm=true --file=tests/Dockerfile.centos7 --tag=centos:ansible .
+
+script:
+  #
+  # Run test playbook on CentOS container
+  #
+
+  # Run container in detached state
+  - sudo docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro centos:ansible /usr/lib/systemd/systemd > "${CONTAINER_ID}"
+
+  # Check syntax of ansible playbook
+  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/kvm_host/tests/test.yml -i /etc/ansible/roles/kvm_host/tests/inventory --syntax-check
+
+  # Run the role/playbook with ansible-playbook
+  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/kvm_host/tests/test.yml -i /etc/ansible/roles/kvm_host/tests/inventory --connection=local --become
+
+  # Clean up
+  - sudo docker stop "$(cat ${CONTAINER_ID})"
+
+notifications:
+  email: false
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/
