@@ -22,7 +22,7 @@
 # The delay is how much time to wait between retries.
 # -----------------------------------------------------------------------------
 #
-- name: install-systemd | Ensure that the systemd packages are installed on host
+- name: systemd-install | Ensure that the systemd packages are installed on host
   package:
     name: '{{ item }}'
     state: present
@@ -43,7 +43,7 @@
 # group and permissions (equivalent to 0755).
 # -----------------------------------------------------------------------------
 #
-- name: install-systemd | Create systemd-networkd directory
+- name: systemd-install | Create systemd-networkd directory
   file:
     path: '/etc/systemd/network'
     state: directory
@@ -63,7 +63,7 @@
 # has the boolean value 'True'.
 # -----------------------------------------------------------------------------
 #
-- name: install-systemd | Find prefixed link, netdev and network files
+- name: systemd-install | Find prefixed link, netdev and network files
   find:
     paths: '/etc/systemd/network'
     patterns: '*.netdev,*.network,*.link'
@@ -82,7 +82,7 @@
 # has the boolean value 'True'.
 # -----------------------------------------------------------------------------
 #
-- name: install-systemd | Remove prefixed network files
+- name: systemd-install | Remove prefixed network files
   file:
     path: '{{ item.path }}'
     state: absent

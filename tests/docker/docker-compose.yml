@@ -1,0 +1,14 @@
+version: '2'
+
+services:
+
+  systemd:
+    image: centos:8
+    build:
+      context: ../../.
+      dockerfile: tests/docker/Dockerfile.centos8
+    tty: true
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+

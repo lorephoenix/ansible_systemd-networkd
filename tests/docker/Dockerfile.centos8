@@ -1,0 +1,48 @@
+FROM centos:8
+ENV container docker
+
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+
+# Install Ansible
+RUN dnf -y install epel-release
+RUN dnf -y install git ansible sudo
+RUN dnf clean all
+
+# Disable requiretty
+RUN sed -i -e 's/^\(Defaults\s*requiretty\)/#--- \1/'  /etc/sudoers
+RUN sed -i 's/^\#inventory .*/inventory       = \/etc\/ansible\/host/' /etc/ansible/ansible.cfg
+RUN sed -i 's/^\#roles_path .*/roles_path        = \/etc\/ansible\/roles/' /etc/ansible/ansible.cfg
+
+# Install Ansible inventory file
+COPY tests/docker/inventory /etc/ansible/hosts
+COPY tests/docker/test.yml /etc/ansible/test.yml
+COPY tests/docker/requirements.yml /etc/ansible/requirements.yml
+
+# Install one or more role or one or more collections.
+#   -f : force overwriting an existing role or collection.
+#   -r : a file containing a list of roles to be imported.
+RUN ansible-galaxy install -f -r /etc/ansible/requirements.yml
+
+# Read file
+RUN cat /etc/ansible/ansible.cfg
+
+# Perform a syntax check on the playbook, but do not execute it
+RUN ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --syntax-check > /tmp/syntax-check.log
+
+# Read file
+RUN cat /tmp/syntax-check.log
+
+# Run playbook 
+# RUN ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --connection=local --become
+
+
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]

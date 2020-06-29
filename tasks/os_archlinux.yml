@@ -13,7 +13,7 @@
 #   ██║██║ ╚████║███████║   ██║   ██║  ██║███████╗███████╗
 #   ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚══════╝
 #
-- name: archlinux-install | Upgrade all packages
+- name: os_archlinux | Upgrade all packages
   pacman:
     force: yes
     update_cache: yes

@@ -21,7 +21,7 @@
 # for resolv.conf.
 # -----------------------------------------------------------------------------
 # 
-- name: config-systemd | Make a symlink for resolv.conf to use systemd-resolved
+- name: systemd-symlinks | Make a symlink for resolv.conf to use systemd-resolved
   file:
     dest: '/etc/resolv.conf'
     src: '/run/systemd/resolve/resolv.conf'

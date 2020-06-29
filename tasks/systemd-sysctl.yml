@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------------------
 # command - Execute commands on targets.
 # -----------------------------------------------------------------------------
-- name: sysctl-systemd | Get physical interfaces names
+- name: systemd-sysctl | Get physical interfaces names
   command: find /sys/class/net -type l -not -lname '*virtual*' -printf '%f\n'
   register: physical_interfaces_cmd
   changed_when: false
@@ -35,7 +35,7 @@
 # use_regex : the pattern is a Python regexes
 # -----------------------------------------------------------------------------
 #
-- name: sysctl-systemd | Find 'net.ipv4.conf.*.forwarding' line
+- name: systemd-sysctl | Find 'net.ipv4.conf.*.forwarding' line
   find:
     paths: '{{ (sysctl_dirs is defined and sysctl_dirs is not none) 
               | bool
@@ -60,7 +60,7 @@
 # configuration file.
 # -----------------------------------------------------------------------------
 #
-- name: sysctl-systemd | Disable/Enable IP Forward for interface
+- name: systemd-sysctl | Disable/Enable IP Forward for interface
   sysctl:
     name: "net.ipv4.conf.{{ item[1].interface }}.forwarding"
     value: '{{ ( 

@@ -20,7 +20,7 @@
 # depending the defaults variable 'defaults_systemd_run_networkd' boolean value.
 # -----------------------------------------------------------------------------
 #
-- name: service-systemd | Enable and start systemd-networkd, if not running
+- name: systemd-service | Enable and start systemd-networkd, if not running
   systemd:
     name: 'systemd-networkd'
     enabled: '{{ defaults_systemd_run_networkd 
@@ -46,7 +46,7 @@
 # Wait 30 seconds for target connection to become reachable/usable
 # but only start after 5 seconds. The maximum number to wait for is 60 seconds.
 # -----------------------------------------------------------------------------
-- name: service-systemd | Wait 60 seconds for target connection
+- name: systemd-service | Wait 60 seconds for target connection
   wait_for_connection:
     connect_timeout: 60
     sleep: 5
@@ -59,7 +59,7 @@
 # depending the variable 'defaults_systemd_resolved_available' boolean value.
 # -----------------------------------------------------------------------------
 #
-- name: service-systemd | Enable and start systemd-resolved, if not running
+- name: systemd-service | Enable and start systemd-resolved, if not running
   systemd:
     name: 'systemd-resolved'
     enabled: '{{ defaults_systemd_resolved_available 
@@ -88,7 +88,7 @@
 # execution, and the main tasks section of your plays).
 # -----------------------------------------------------------------------------
 #
-- name: service-systemd | Restart systemd_networkd prior to applying sysctl changes
+- name: systemd-service | Restart systemd_networkd prior to applying sysctl changes
   meta: flush_handlers
   tags:
     - service-systemd
