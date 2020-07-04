@@ -286,7 +286,7 @@
   # false then upload the _link dictionary into the macro SECTION_MAP and add
   # the string 'LINK' to the list _workspace.SECTIONS.
 #}
-{%- if item.udev is not defined or item.udev is false and _link is defined
+{%- if item.udev is not defined or item.udev is sameas false and _link is defined
     and _link -%}
   {{- object.SECTION_MAP('LINK', _link) -}}
   {{- _workspace.SECTIONS.append('LINK') -}}
@@ -344,7 +344,7 @@
   {%- set key = key| upper -%}{# Change key to uppercase characters #}
   {%- if _workspace.ADDRESS is none and value is iterable and value is defined
         and key == 'ADDRESS'
-        and ( _workspace.DHCP is none or _workspace.DHCP is false ) -%}{#
+        and ( _workspace.DHCP is none or _workspace.DHCP is sameas false ) -%}{#
     # The attribute 'ADDRESS' from container _workspace isn't set.
     # The variable key have the string 'ADDRESS'.
     # The attribute 'DHCP' from the container _workspace isn't set OR
@@ -367,7 +367,7 @@
     {%- endif -%}{# End of if/elif value is ???? #}
   {%- elif _workspace.ROUTE is none and value is iterable and value is defined
         and ( key == 'ROUTE' or key in _route.keys() )
-        and ( _workspace.DHCP is none or _workspace.DHCP is false ) -%}{#
+        and ( _workspace.DHCP is none or _workspace.DHCP is sameas false ) -%}{#
     # The attribute 'ROUTE' from container _workspace isn't set.
     # The variable key have the string 'ROUTE'.
     # The attribute 'DHCP' from the container _workspace isn't set OR
