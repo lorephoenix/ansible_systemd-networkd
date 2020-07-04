@@ -41,7 +41,7 @@ RUN ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --syntax-check 
 RUN cat /tmp/syntax-check.log
 
 # Run playbook 
-# RUN ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --connection=local --become
+RUN ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --connection=local --become
 
 
 VOLUME [ "/sys/fs/cgroup" ]
