@@ -14,7 +14,7 @@
 - name: cleanup | Populate service facts
   service_facts:
   async: 45
-  poll: 0
+  poll: 10
 
 # -----------------------------------------------------------------------------
 # service - Manage services
