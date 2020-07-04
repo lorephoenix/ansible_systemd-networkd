@@ -6,4 +6,6 @@
   vars:
     systemd_networks:
       - interface: eth0
+        Match:
+          Architecture: x86-64
       
