@@ -13,6 +13,8 @@
 # 
 - name: cleanup | Populate service facts
   service_facts:
+  async: 45
+  poll: 0
 
 # -----------------------------------------------------------------------------
 # service - Manage services
@@ -27,7 +29,6 @@
     enabled: no
   when: 
     - service_facts is defined 
-    - service_facts is not none
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
   with_items:
