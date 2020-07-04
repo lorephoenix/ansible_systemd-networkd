@@ -28,7 +28,6 @@
     name: "{{ item }}"
     enabled: no
   when: 
-    - service_facts is defined 
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
   with_items:
@@ -52,7 +51,6 @@
     state: stopped
   when: 
     - service_facts is defined 
-    - service_facts is not none
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
     - ansible_distribution_major_version|int != 7
