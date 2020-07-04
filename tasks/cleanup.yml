@@ -26,6 +26,7 @@
     name: "{{ item }}"
     enabled: no
   when: 
+    - docker is not defined or docker is false
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
   with_items:
