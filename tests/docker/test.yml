@@ -6,6 +6,30 @@
   vars:
     systemd_networks:
       - interface: eth0
+        Description: Management interface
         Match:
-          Architecture: x86-64
-      
+          Virtualization: false
+        Link:
+          MTUBytes: 1500
+          ARP: true
+          Multicast: true
+          RequiredForOnline: true
+        Network:
+          DHCP: true
+               
+      - interface: dummy0
+        Description: Dummy Zero interface
+        Match:
+          Virtualization: no
+        Link:
+          MTUBytes: 1500
+          ARP: yes
+          Multicast: yes
+          RequiredForOnline: yes
+        Network:
+          DHCP: false
+          Domains:
+            - example.com
+            - example.net 
+        Address:
+          - Address: 192.168.47.9/28
