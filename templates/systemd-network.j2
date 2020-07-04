@@ -448,7 +448,7 @@
       {%- set flag =  true -%}
       {{- _ANALYSE(section, _sectionDataSet.ROUTE, key, values) -}}
     {% endif -%}
-  {%- if section == key and flag|bool == false-%}
+  {%- if section == key and flag is sameas false-%}
     {{- _ANALYSE(section, none, key, values) -}}
   {%- endif -%}{# End of if/elif section == ???? ... #}
 {%- endfor -%}{# End of for section in sections #}
@@ -688,7 +688,7 @@
           {%- endfor -%}{# End of for k, v in tt.items() #}
         {%- endif -%}{# End of if _workspace.FLAG #}
       {%- endfor -%}{# End of for tt in value #}
-      {%- if _workspace.FLAG|bool == false-%}{#
+      {%- if _workspace.FLAG is sameas false-%}{#
         # The attribute 'FLAG' from the container _workspace is set with the 
         # boolean 'False', which means that the items within the list aren't
         # dictionarties.
