@@ -17,10 +17,6 @@
   async: 45
   poll: 10
 
-- name: debug test
-  debug:
-    msg: "{{ services_state }}"
-
 # -----------------------------------------------------------------------------
 # service - Manage services
 # Controls services on remote hosts.
@@ -33,6 +29,7 @@
     name: "{{ item }}"
     enabled: no
   when: 
+    - ansible_facts.services is defined
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
   with_items:
@@ -55,7 +52,7 @@
     name: "{{ item }}"
     state: stopped
   when: 
-    - service_facts is defined 
+    - service_facts.services is defined 
     - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
     - ansible_facts.services[item ~ ".service"] is defined
     - ansible_distribution_major_version|int != 7
