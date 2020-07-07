@@ -11,10 +11,14 @@
 # service_facts – Return service state information as fact data
 # -----------------------------------------------------------------------------
 # 
-- name: cleanup | Populate service facts
+- name: cleanup | Gathering service facts
   service_facts:
+  register: services_state
   async: 45
   poll: 10
+
+
+ - debug: var=services_state.ansible_facts.services["systemd-networkd.service"].state
 
 # -----------------------------------------------------------------------------
 # service - Manage services
