@@ -17,8 +17,9 @@
   async: 45
   poll: 10
 
-
-- debug: var=services_state.ansible_facts.services["systemd-networkd.service"].state
+- name: debug test
+  debug:
+    msg: "{{ services_state }}"
 
 # -----------------------------------------------------------------------------
 # service - Manage services
