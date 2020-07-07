@@ -18,7 +18,7 @@
   poll: 10
 
 
- - debug: var=services_state.ansible_facts.services["systemd-networkd.service"].state
+- debug: var=services_state.ansible_facts.services["systemd-networkd.service"].state
 
 # -----------------------------------------------------------------------------
 # service - Manage services
