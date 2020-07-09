@@ -17,6 +17,10 @@
   async: 45
   poll: 10
 
+- name: debug
+  debug:
+    msg: "{{ services_state }}"
+
 # -----------------------------------------------------------------------------
 # service - Manage services
 # Controls services on remote hosts.
