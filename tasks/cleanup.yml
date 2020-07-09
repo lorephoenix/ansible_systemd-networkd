@@ -32,8 +32,8 @@
     - services_state.ansible_facts is defined
     - services_state.ansible_facts.services is defined
     - services_state.ansible_facts.services["systemd-networkd.service"] is defined
-    - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
-    - ansible_facts.services[item ~ ".service"] is defined
+    - services_state.ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
+    - services_state.ansible_facts.services[item ~ ".service"] is defined
   with_items:
     - network
     - NetworkManager
@@ -57,8 +57,8 @@
     - services_state.ansible_facts is defined
     - services_state.ansible_facts.services is defined
     - services_state.ansible_facts.services["systemd-networkd.service"] is defined
-    - ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
-    - ansible_facts.services[item ~ ".service"] is defined
+    - services_state.ansible_facts.services["systemd-networkd.service"].state|lower == 'running'
+    - services_state.ansible_facts.services[item ~ ".service"] is defined
     - ansible_distribution_major_version|int != 7
   with_items:
     - network
