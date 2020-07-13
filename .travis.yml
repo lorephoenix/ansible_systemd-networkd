@@ -1,39 +1,21 @@
 ---
 language: python
-python: 
-  - "2.7"
+python:
+  - "3.6"
 
 sudo: required
-env:
-  - CONTAINER_ID=$(mktemp)
 
 services: 
   - docker
 
-  
 before_install:
-  # Pull containers
-  - sudo docker pull centos:7
-
-  # Customize containers
-  - sudo docker build --rm=true --file=tests/Dockerfile.centos7 --tag=centos:ansible .
-
+  # Upgrade Docker.
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - sudo pip install docker-compose
+  - docker-compose version
+  
 script:
-  #
-  # Run test playbook on CentOS container
-  #
-
-  # Run container in detached state
-  - sudo docker run --detach --privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro centos:ansible /usr/lib/systemd/systemd > "${CONTAINER_ID}"
-
-  # Check syntax of ansible playbook
-  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/systemd-networkd/tests/test.yml -i /etc/ansible/roles/systemd-networkd/tests/inventory --syntax-check
-
-  # Run the role/playbook with ansible-playbook
-  - sudo docker exec "$(cat ${CONTAINER_ID})" ansible-playbook /etc/ansible/roles/systemd-networkd/tests/test.yml -i /etc/ansible/roles/systemd-networkd/tests/inventory --connection=local --become
-
-  # Clean up
-  - sudo docker stop "$(cat ${CONTAINER_ID})"
 
 notifications:
   email: false
