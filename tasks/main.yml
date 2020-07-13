@@ -17,7 +17,7 @@
 # variables to that machine's needs.
 # -----------------------------------------------------------------------------
 #
-- name: Load OS dependent variables
+- name: Load OS dependent variables.
   include_vars: '{{ item_os }}'
   with_first_found:
     - files:
@@ -33,7 +33,7 @@
 # assert - Asserts given expressions are true
 # -----------------------------------------------------------------------------
 #
-- name: OS is supported
+- name: OS is supported.
   assert:
     that: os_supported == True
   tags: [ 'OS dependency']

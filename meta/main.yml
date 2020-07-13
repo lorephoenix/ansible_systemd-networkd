@@ -18,6 +18,6 @@ galaxy_info:
     
   categories:
     - systemd
-    - development
+    - networking
   dependencies: []
     

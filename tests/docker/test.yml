@@ -1,9 +1,27 @@
 ---
 - hosts: localhost
   remote_user: root
+  become: True
+  become_method: sudo
+  become_user: root
+  gather_facts: True
+
   roles:
     - role: systemd-networkd
+  
   vars:
+    systemd_resolved:
+      DNS: '192.168.1.1'
+      FallbackDNS: '8.8.8.8 8.8.4.4'
+      Cache: yes
+      DNSOverTLS: no
+      DNSSEC: 'allow-downgrade'
+      DNSStubListener: yes
+      Domains: 'example.com example.net'
+      LLMNR: no
+      MulticastDNS: no
+      ReadEtcHosts: no
+      
     systemd_networks:
       - interface: eth0
         Description: Management interface
@@ -17,8 +35,8 @@
         Network:
           DHCP: true
                
-      - interface: dummy0
-        Description: Dummy Zero interface
+      - interface: eth1
+        Description: test interface
         Match:
           Virtualization: no
         Link:

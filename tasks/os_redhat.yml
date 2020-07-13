@@ -24,21 +24,33 @@
 # variables to that machine's needs.
 # -----------------------------------------------------------------------------
 #
-- name: os_redhat | Wait for systemd to complete initialization. # noqa 303
+# -----------------------------------------------------------------------------
+# command -  Execute commands on targets
+# Issue and workaround to Fedora DNF error 
+# "No such file or directory: '/var/lib/dnf/rpmdb_lock.pid'"
+# see URL
+# https://www.jeffgeerling.com/blog/2020/resolving-fedora-dnf-error-no-such-file-or-directory-varlibdnfrpmdblockpid
+# -----------------------------------------------------------------------------
+- name: os_redhat | Wait for systemd to complete initialization.
   command: systemctl is-system-running
   register: systemctl_status
-  until: "'running' in systemctl_status.stdout"
+  until: >
+        'running' in systemctl_status.stdout or
+        'degraded' in systemctl_status.stdout
   retries: 30
   delay: 5
-  when: ansible_service_mgr == 'systemd'
+  when: 
+    - ansible_service_mgr == 'systemd' 
+    - ansible_distribution|lower == 'fedora'
+    - ansible_distribution_major_version|int >= 32
   changed_when: false
 
-- name: os_redhat | Upgrade all packages
+- name: os_redhat | Upgrade all packages.
   package:
     name: "*"
     state: latest
 
-- name: os_redhat | Make sure dnf-plugings.core installed
+- name: os_redhat | Make sure dnf-plugings.core installed.
   dnf:
     name: dnf-plugins-core
     state: present
@@ -46,10 +58,10 @@
     - ansible_distribution|lower  != 'fedora'
     - ansible_distribution_major_version|int >= 8
 
-- name: os_redhat | Install the EPEL rpm from a remote repo (version >= 8)
+- name: os_redhat | Install the EPEL rpm from a remote repo (version >= 8).
   dnf:
     name: 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version|int}}.noarch.rpm'
     state: present
   when: 
-    - ansible_distribution|lower  != 'fedora'
+    - ansible_distribution|lower != 'fedora'
     - ansible_distribution_major_version|int >= 8

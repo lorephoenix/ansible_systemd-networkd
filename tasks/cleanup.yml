@@ -11,7 +11,7 @@
 # service_facts – Return service state information as fact data
 # -----------------------------------------------------------------------------
 # 
-- name: cleanup | Gathering service facts
+- name: cleanup | Gathering service facts.
   service_facts:
   register: services_state
   async: 45
@@ -24,7 +24,7 @@
 # then disable the service start on boot.
 # -----------------------------------------------------------------------------
 # 
-- name: cleanup | Disable old network scripts and NetworkManager
+- name: cleanup | Disable old network scripts and NetworkManager.
   service:
     name: "{{ item }}"
     enabled: no
@@ -49,7 +49,7 @@
 # then to stop the service.
 # -----------------------------------------------------------------------------
 # 
-- name: cleanup | Stop the service network and NetworkManager
+- name: cleanup | Stop the service network and NetworkManager.
   service:
     name: "{{ item }}"
     state: stopped
@@ -74,7 +74,7 @@
 # validate the system rebooted successfully.
 # -----------------------------------------------------------------------------
 # 
--  name: cleanup | Reboot RedHat OS family version 7
+-  name: cleanup | Reboot RedHat OS family version 7.
    reboot:
     post_reboot_delay : 30
     reboot_timeout: 120

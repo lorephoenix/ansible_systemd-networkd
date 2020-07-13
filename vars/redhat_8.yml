@@ -12,6 +12,8 @@ sysctl_dirs:
   - /etc/sysctl.d 
   - /usr/lib/sysctl.d
 systemd_networkd_base_pkgs:
+  - findutils
+  - iproute
   - systemd
   - systemd-libs
   - systemd-pam

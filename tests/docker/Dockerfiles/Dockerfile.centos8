@@ -1,0 +1,57 @@
+FROM centos:8
+
+# -----------------------------------------------------------------------------
+# Remove unneeded pkgs, update and clean cache
+# -----------------------------------------------------------------------------
+RUN dnf -y update --refresh; \
+dnf -y upgrade --refresh; \
+dnf -y install epel-release; \
+dnf clean all
+
+# -----------------------------------------------------------------------------
+# Clean unneeded services
+# -----------------------------------------------------------------------------
+RUN [ -d "/lib/systemd/system/sysinit.target.wants" ] && \
+(cd /lib/systemd/system/sysinit.target.wants/; for i in *; \
+    do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+
+# -----------------------------------------------------------------------------
+# Install required pkgs
+# -----------------------------------------------------------------------------
+RUN dnf -y install git ansible sudo
+
+# -----------------------------------------------------------------------------
+# Disable requiretty
+# -----------------------------------------------------------------------------
+RUN sed -i -e 's/^\(Defaults\s*requiretty\)/#--- \1/'  /etc/sudoers
+RUN sed -i 's/^\#inventory .*/inventory       = \/etc\/ansible\/host/' \
+    /etc/ansible/ansible.cfg
+RUN sed -i 's/^\#roles_path .*/roles_path        = \/etc\/ansible\/roles/' \
+    /etc/ansible/ansible.cfg
+
+# -----------------------------------------------------------------------------
+# Install Ansible inventory file
+# -----------------------------------------------------------------------------
+COPY tests/docker/inventory /etc/ansible/hosts
+COPY tests/docker/test.yml /etc/ansible/test.yml
+COPY tests/docker/requirements.yml /etc/ansible/requirements.yml
+
+# -----------------------------------------------------------------------------
+# Switch default target from graphical to multi-user
+# -----------------------------------------------------------------------------
+RUN systemctl set-default multi-user.target 
+
+# -----------------------------------------------------------------------------
+# Systemd inside a container
+# -----------------------------------------------------------------------------
+ENV container docker
+VOLUME [ "/sys/fs/cgroup", "/tmp", "/run" ]
+
+CMD ["/usr/sbin/init"]

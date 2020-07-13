@@ -35,7 +35,7 @@
 #       FallbackDNS: '1.1.1.1 1.0.0.1'
 # -----------------------------------------------------------------------------
 #
-- name: systemd-config | Create systemd-resolved config
+- name: systemd-config | Create systemd-resolved config.
   template:
     src: 'etc/systemd/resolved.conf.j2'
     dest: '/etc/systemd/resolved.conf'
@@ -82,7 +82,7 @@
 #           UpDelaySec: 200
 # -----------------------------------------------------------------------------
 #
-- name: systemd-config | Create systemd-networkd network netdev(s)
+- name: systemd-config | Create systemd-networkd network netdev(s).
   template:
     src: 'etc/systemd/network/systemd-netdev.j2'
     dest: '/etc/systemd/network/{{ (item.interface) ~ ".netdev" }}'
@@ -128,7 +128,7 @@
 #           MTUBytes: 1500
 # -----------------------------------------------------------------------------
 # 
-- name: systemd-config | Create systemd-networkd network link(s)
+- name: systemd-config | Create systemd-networkd network link(s).
   template:
     src: 'etc/systemd/network/systemd-link.j2'
     dest: '/etc/systemd/network/{{ (item.interface) ~ ".link" }}'
@@ -178,7 +178,7 @@
 #       Gateway: 192.168.1.1
 # -----------------------------------------------------------------------------
 #
-- name: systemd-config | Create systemd-networkd network network(s)
+- name: systemd-config | Create systemd-networkd network network(s).
   template:
     src: 'etc/systemd/network/systemd-network.j2'
     dest: '/etc/systemd/network/{{ (item.interface) ~ ".network" }}'

@@ -15,6 +15,5 @@ systemd_networkd_base_pkgs:
   - systemd
   - systemd-libs
   - systemd-sysvcompat
-  - systemd-fsck-silent
 systemd_resolved_enabled: True
 

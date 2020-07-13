@@ -2,13 +2,62 @@ version: '2'
 
 services:
 
-  systemd:
-    image: centos:8
+  systemd-networkd_archlinux:
     build:
       context: ../../.
-      dockerfile: tests/docker/Dockerfile.centos8
-    tty: true
+      dockerfile: tests/docker/Dockerfiles/Dockerfile.archlinux
+    image: archlinux_ansible:systemd-networkd
+    networks:
+      - public
+      - hidden
     privileged: true
+    tty: true
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
+  systemd-networkd_centos8:
+    build:
+      context: ../../.
+      dockerfile: tests/docker/Dockerfiles/Dockerfile.centos8
+    image: centos8_ansible:systemd-networkd
+    networks:
+      - public
+      - hidden
+    privileged: true
+    tty: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  systemd-networkd_fedora32:
+    build:
+      context: ../../.
+      dockerfile: tests/docker/Dockerfiles/Dockerfile.fedora32
+    image: fedora32_ansible:systemd-networkd
+    networks:
+      - public
+      - hidden
+    privileged: true
+    tty: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  systemd-networkd_manjaro:
+    build:
+      context: ../../.
+      dockerfile: tests/docker/Dockerfiles/Dockerfile.manjaro
+    image: manjaro_ansible:systemd-networkd
+    networks:
+      - public
+      - hidden
+    privileged: true
+    tty: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+
+networks:
+  public:
+    driver: bridge
+  hidden:
+    driver: bridge
+    internal: true
