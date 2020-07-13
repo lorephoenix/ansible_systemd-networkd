@@ -10,18 +10,6 @@
     - role: systemd-networkd
   
   vars:
-    systemd_resolved:
-      DNS: '192.168.1.1'
-      FallbackDNS: '8.8.8.8 8.8.4.4'
-      Cache: yes
-      DNSOverTLS: no
-      DNSSEC: 'allow-downgrade'
-      DNSStubListener: yes
-      Domains: 'example.com example.net'
-      LLMNR: no
-      MulticastDNS: no
-      ReadEtcHosts: no
-      
     systemd_networks:
       - interface: eth0
         Description: Management interface
