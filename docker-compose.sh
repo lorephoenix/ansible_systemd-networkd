@@ -13,6 +13,7 @@ if [[ $DVALID -gt 0 ]]; then
 
 else
     echo "[Error] File not found"
+    exit 1
 fi
 exit 0
 
