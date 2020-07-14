@@ -73,9 +73,15 @@ docker-compose -f $DCONFIG exec systemd-networkd_manjaro \
 # -----------------------------------------------------------------------------
 # List containers
 # -----------------------------------------------------------------------------
-DMAX=$(docker-compose -f $DCONFIG exec ps | awk 'NR>2' | wc -l)
-
-echo $DMAX
-
-#dmax=$(docker-compose -f tests/docker/docker-compose.yml ps -a  | awk 'NR>2' | wc -l)
+DMAX=$(docker-compose -f $DCONFIG ps | awk 'NR>2' | wc -l)
+if [[ $DMAX > 2 ]]; then    
+    DCUR=$(docker-compose -f $DCONFIG ps | awk 'NR>2' | grep Up | wc -l)
+    docker-compose -f $DCONFIG ps | awk 'NR>2'
+    
+    if [[ $DMAX != $DCUR ]]; then
+        echo "The amount of running containers (that has the state 'Up') isn't \
+equal with the total list of containers."
+        exit 1
+    fi
+fi
 
