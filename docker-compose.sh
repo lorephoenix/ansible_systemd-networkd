@@ -1,18 +1,23 @@
 #!/usr/bin/bash
 
-DCONFIG="tests/docker/docker-compose.ym1l"
-DVALID=$(docker-compose -f $DCONFIG config | wc -l)
+# -----------------------------------------------------------------------------
+# Specify an compose file
+# -----------------------------------------------------------------------------
+DCONFIG="tests/docker/docker-compose.yml"
 
+# -----------------------------------------------------------------------------
+# Validate configuration file
+# -----------------------------------------------------------------------------
+DVALID=$(docker-compose -f $DCONFIG config | wc -l)
 if [[ $DVALID -gt 0 ]]; then
-    # -----------------------------------------------------------------------------
-    # Validate configuration file
-    # -----------------------------------------------------------------------------
-    
+    # The variable DVALID has an integer higher then 0, which means valid and 
+    # not empty.
+
 
     echo $DVALID
 
 else
-    echo "[Error] File not found"
+    echo "[Error] Compose file '$DCONFIG' not found"
     exit 1
 fi
 exit 0
