@@ -3,7 +3,7 @@
 DCONFIG="tests/docker/docker-compose.ym1l"
 DVALID=$(docker-compose -f $DCONFIG config | wc -l)
 
-if [[ $DVALID > 0 ]]; then
+if [[ $DVALID -gt 0 ]]; then
     # -----------------------------------------------------------------------------
     # Validate configuration file
     # -----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ if [[ $DVALID > 0 ]]; then
 else
     echo "[Error] File not found"
 fi
-exit 1
+exit 0
 
 # -----------------------------------------------------------------------------
 # Build or rebuild services
