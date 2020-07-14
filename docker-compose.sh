@@ -9,28 +9,23 @@ DCONFIG="tests/docker/docker-compose.yml"
 # Validate configuration file
 # -----------------------------------------------------------------------------
 DVALID=$(docker-compose -f $DCONFIG config | wc -l)
-if [[ $DVALID -gt 0 ]]; then
-    # The variable DVALID has an integer higher then 0, which means valid and 
-    # not empty.
 
-
-    echo $DVALID
-
-else
+if [[ $DVALID -eq 0 ]]; then
+    # The variable DVALID has an integer equal to 0, which means not valid OR
+    # empty.  
     echo "[Error] Compose file '$DCONFIG' not found"
-    exit 1
+    exit 1  
 fi
-exit 0
-
-# -----------------------------------------------------------------------------
-# Build or rebuild services
-# -----------------------------------------------------------------------------
-docker-compose -f $DCONFIG build 
 
 # -----------------------------------------------------------------------------
 # Validate and view config file
 # -----------------------------------------------------------------------------
 docker-compose -f $DCONFIG config
+
+# -----------------------------------------------------------------------------
+# Build or rebuild services
+# -----------------------------------------------------------------------------
+docker-compose -f $DCONFIG build
 
 # -----------------------------------------------------------------------------
 # Run container in detached state
@@ -42,55 +37,45 @@ docker-compose -f $DCONFIG up -d
 #   -f : force overwriting an existing role or collection.
 #   -r : a file containing a list of roles to be imported.
 # -----------------------------------------------------------------------------
-docker-compose -f $DCONFIG exec systemd-networkd_archlinux ansible-galaxy install -f -r \
-    /etc/ansible/requirements.yml
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_centos8 ansible-galaxy install -f -r \
-    /etc/ansible/requirements.yml
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_fedora32 ansible-galaxy install -f -r \
-    /etc/ansible/requirements.yml
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_manjaro ansible-galaxy install -f -r \
-    /etc/ansible/requirements.yml
+docker-compose -f $DCONFIG exec systemd-networkd_archlinux ansible-galaxy \
+    install -f -r /etc/ansible/requirements.yml
+docker-compose -f $DCONFIG exec systemd-networkd_centos8 ansible-galaxy \
+    install -f -r /etc/ansible/requirements.yml
+docker-compose -f $DCONFIG exec systemd-networkd_fedora32 ansible-galaxy \
+    install -f -r /etc/ansible/requirements.yml
+docker-compose -f $DCONFIG exec systemd-networkd_manjaro ansible-galaxy \
+    install -f -r /etc/ansible/requirements.yml
 
 # -----------------------------------------------------------------------------
-# Check syntax of ansible playbook
+# Check syntax of Ansible playbook
 # -----------------------------------------------------------------------------
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_archlinux ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --syntax-check
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_centos8 ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --syntax-check
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_fedora32 ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --syntax-check
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_manjaro ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --syntax-check
+docker-compose -f $DCONFIG exec systemd-networkd_archlinux \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --syntax-check
+docker-compose -f $DCONFIG exec systemd-networkd_centos8 \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --syntax-check
+docker-compose -f $DCONFIG exec systemd-networkd_fedora32 \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --syntax-check
+docker-compose -f $DCONFIG exec systemd-networkd_manjaro \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts --syntax-check
 
 # -----------------------------------------------------------------------------
-# Run the role/playbook with ansible-playbook
+# Run the Ansible role/playbook
 # -----------------------------------------------------------------------------
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_archlinux ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --connection=local --become
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_centos8 ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --connection=local --become
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_fedora32 ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --connection=local --become
-docker-compose -f tests/docker/docker-compose.yml exec \
-    systemd-networkd_manjaro ansible-playbook /etc/ansible/test.yml -i \
-    /etc/ansible/hosts --connection=local --become
+docker-compose -f $DCONFIG exec systemd-networkd_archlinux \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts
+docker-compose -f $DCONFIG exec systemd-networkd_centos8 \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts
+docker-compose -f $DCONFIG exec systemd-networkd_fedora32 \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts
+docker-compose -f $DCONFIG exec systemd-networkd_manjaro \
+    ansible-playbook /etc/ansible/test.yml -i /etc/ansible/hosts
 
 # -----------------------------------------------------------------------------
-# Run the role/playbook with ansible-playbook
+# List containers
 # -----------------------------------------------------------------------------
-docker-compose -f tests/docker/docker-compose.yml ps 
+DMAX=$(docker-compose -f $DCONFIG exec ps | awk 'NR>2' | wc -l)
 
+echo $DMAX
 
 #dmax=$(docker-compose -f tests/docker/docker-compose.yml ps -a  | awk 'NR>2' | wc -l)
 
