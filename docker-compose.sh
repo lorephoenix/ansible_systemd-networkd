@@ -3,7 +3,6 @@
 DCONFIG="tests/docker/docker-compose.ym1l"
 DVALID=$(docker-compose -f $DCONFIG config | wc -l)
 
-whereis travis_terminate
 if [[ $DVALID > 0 ]]; then
     # -----------------------------------------------------------------------------
     # Validate configuration file
@@ -14,7 +13,6 @@ if [[ $DVALID > 0 ]]; then
 
 else
     echo "[Error] File not found"
-    travis_terminate 1;
 fi
 exit 1
 
